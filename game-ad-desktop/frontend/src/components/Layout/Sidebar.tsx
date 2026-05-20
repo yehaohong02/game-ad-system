@@ -37,17 +37,17 @@ const menuItems: MenuItem[] = [
   {
     key: '/execution',
     icon: <ThunderboltOutlined />,
-    label: '智能执行（未开发）',
+    label: '智能执行',
   },
   {
     key: '/safety',
     icon: <SafetyOutlined />,
-    label: '安全防护（未开发）',
+    label: '安全防护',
   },
   {
     key: '/memory',
     icon: <DatabaseOutlined />,
-    label: '记忆沉淀（未开发）',
+    label: '记忆沉淀',
   },
   { type: 'divider' },
   {
@@ -63,7 +63,7 @@ const menuItems: MenuItem[] = [
   {
     key: '/reports',
     icon: <BarChartOutlined />,
-    label: '报告中心（未开发）',
+    label: '报告中心',
   },
 ];
 
