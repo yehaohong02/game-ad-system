@@ -12,7 +12,7 @@ import {
   useCreativeInsightStore,
   TrendItem, CreativeAnalysis, OptimizationSuggestion, FormulaWithData,
 } from '../stores/creativeInsightNew';
-import materialDataJson from '../data/materialData.json';
+import { useMaterialDataStore } from '../stores/materialData';
 
 const { Text } = Typography;
 
@@ -291,7 +291,8 @@ export default function CreativeInsightNew() {
     brief, generateBrief,
   } = useCreativeInsightStore();
 
-  const data: any[] = (materialDataJson as any[]).filter((r: any) => r.spend > 0);
+  const materialData = useMaterialDataStore(s => s.data);
+  const data: any[] = materialData.filter((r: any) => r.spend > 0);
 
   // === Charts ===
   const spendCtrScatter = (() => {

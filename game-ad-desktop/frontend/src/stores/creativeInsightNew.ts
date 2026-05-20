@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import materialDataJson from '../data/materialData.json';
+import { useMaterialDataStore, MaterialRecord } from './materialData';
 import { formulas, structures, Formula, StructureItem } from './workshop';
 
 // Types
@@ -150,8 +150,8 @@ const formulaImprovementMap: Record<string, { check: (r: any) => boolean; reason
 };
 
 // Derive trends from real material data
-function deriveTrends(): TrendItem[] {
-  const data = (materialDataJson as any[]).filter(r => r.spend > 0);
+function deriveTrends(rawData: MaterialRecord[]): TrendItem[] {
+  const data = rawData.filter(r => r.spend > 0);
   const catMap: Record<string, { count: number; spend: number; imp: number; clicks: number }> = {};
   data.forEach(r => {
     if (!catMap[r.category]) catMap[r.category] = { count: 0, spend: 0, imp: 0, clicks: 0 };
@@ -182,8 +182,8 @@ function deriveTrends(): TrendItem[] {
 }
 
 // Derive formulas with real data matching + material-level recommendations
-function deriveFormulasWithData(): FormulaWithData[] {
-  const data = (materialDataJson as any[]).filter(r => r.spend > 0);
+function deriveFormulasWithData(rawData: MaterialRecord[]): FormulaWithData[] {
+  const data = rawData.filter(r => r.spend > 0);
   const catMap: Record<string, { count: number; spend: number; imp: number; clicks: number; play: number; play100: number }> = {};
   data.forEach(r => {
     if (!catMap[r.category]) catMap[r.category] = { count: 0, spend: 0, imp: 0, clicks: 0, play: 0, play100: 0 };
@@ -254,8 +254,8 @@ function deriveFormulasWithData(): FormulaWithData[] {
 }
 
 // Derive creative analysis
-function deriveCreatives(): CreativeAnalysis[] {
-  const data = (materialDataJson as any[]).filter(r => r.spend > 0);
+function deriveCreatives(rawData: MaterialRecord[]): CreativeAnalysis[] {
+  const data = rawData.filter(r => r.spend > 0);
   return data.sort((a, b) => b.spend - a.spend).slice(0, 20).map(r => {
     const ctr = r.ctr || 0;
     const playRate = r.playCount > 0 ? r.play2s / r.playCount : 0;
@@ -284,8 +284,8 @@ function deriveCreatives(): CreativeAnalysis[] {
 }
 
 // Derive optimization suggestions with data evidence + material references
-function deriveSuggestions(): OptimizationSuggestion[] {
-  const data = (materialDataJson as any[]).filter(r => r.spend > 0);
+function deriveSuggestions(rawData: MaterialRecord[]): OptimizationSuggestion[] {
+  const data = rawData.filter(r => r.spend > 0);
   const suggestions: OptimizationSuggestion[] = [];
 
   // 低CTR素材 — 关联具体素材
@@ -384,20 +384,28 @@ function deriveSuggestions(): OptimizationSuggestion[] {
   return suggestions;
 }
 
+function deriveAll(rawData: MaterialRecord[]) {
+  return {
+    trends: deriveTrends(rawData),
+    creatives: deriveCreatives(rawData),
+    suggestions: deriveSuggestions(rawData),
+    formulasWithData: deriveFormulasWithData(rawData),
+  };
+}
+
+const initialData = useMaterialDataStore.getState().data;
+
 export const useCreativeInsightStore = create<CreativeInsightState>((set, get) => ({
   activeTab: 'trends',
   setActiveTab: (tab) => set({ activeTab: tab }),
 
-  trends: deriveTrends(),
-  creatives: deriveCreatives(),
-  suggestions: deriveSuggestions(),
+  ...deriveAll(initialData),
   selectedSuggestions: [],
   toggleSuggestion: (id) => {
     const { selectedSuggestions } = get();
     set({ selectedSuggestions: selectedSuggestions.includes(id) ? selectedSuggestions.filter(s => s !== id) : [...selectedSuggestions, id] });
   },
 
-  formulasWithData: deriveFormulasWithData(),
   selectedFormula: null,
   selectFormula: (f) => set({ selectedFormula: f }),
 
@@ -408,7 +416,7 @@ export const useCreativeInsightStore = create<CreativeInsightState>((set, get) =
     const { suggestions, selectedSuggestions, selectedFormula, formulasWithData } = get();
     const selected = selectedSuggestions.length > 0 ? suggestions.filter(s => selectedSuggestions.includes(s.id)) : suggestions.filter(s => s.priority === 'high');
 
-    const data = (materialDataJson as any[]).filter(r => r.spend > 0);
+    const data = useMaterialDataStore.getState().data.filter(r => r.spend > 0);
     const totalSpend = data.reduce((s, r) => s + r.spend, 0);
     const cats = [...new Set(data.map(r => r.category))];
 
@@ -440,3 +448,9 @@ export const useCreativeInsightStore = create<CreativeInsightState>((set, get) =
     });
   },
 }));
+
+// 订阅共享数据源，数据变化时自动重新计算
+useMaterialDataStore.subscribe((state) => {
+  const derived = deriveAll(state.data);
+  useCreativeInsightStore.setState(derived);
+});

@@ -7,7 +7,7 @@ import {
   BarChartOutlined, TeamOutlined, GlobalOutlined,
 } from '@ant-design/icons';
 import ReactECharts from 'echarts-for-react';
-import materialDataJson from '../data/materialData.json';
+import { useMaterialDataStore } from '../stores/materialData';
 
 const { Text } = Typography;
 
@@ -56,10 +56,11 @@ function MetricChip({ label, value, unit, trend, color }: { label: string; value
 }
 
 export default function Dashboard() {
-  const [title, setTitle] = useState(() => localStorage.getItem('dashboard_title') || '设计师素材数据分析');
+  const [title, setTitle] = useState(() => localStorage.getItem('dashboard_title') || '5月设计师数据');
   const [editingTitle, setEditingTitle] = useState(false);
 
-  const data: any[] = useMemo(() => (materialDataJson as any[]).filter(r => r.spend > 0), []);
+  const materialData = useMaterialDataStore(s => s.data);
+  const data: any[] = useMemo(() => materialData.filter(r => r.spend > 0), [materialData]);
 
   // === Core Metrics ===
   const m = useMemo(() => {

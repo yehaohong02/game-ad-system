@@ -1,6 +1,65 @@
 import { create } from 'zustand';
 import { platformApi } from '../services/api';
 import * as XLSX from 'xlsx';
+import { mockOverviewSummary, mockCategoryRecords } from '../data/platformMockData';
+import { useMaterialDataStore, type MaterialRecord } from './materialData';
+
+// ---- localStorage persistence helpers ----
+
+const STORAGE_KEY_PREFIX = 'platform_data_';
+const OVERVIEW_STORAGE_KEY = 'platform_data_overview';
+
+function saveToStorage(key: string, data: any) {
+  try { localStorage.setItem(key, JSON.stringify(data)); } catch {}
+}
+function loadFromStorage<T>(key: string): T | null {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) as T : null;
+  } catch { return null; }
+}
+
+// ---- Platform → MaterialData bridge ----
+
+// Accumulates all platform records by category for syncing
+let _platformRecordsByCategory: Record<string, DataRecord[]> = {};
+
+function toNumber(v: any): number {
+  if (v === undefined || v === null || v === '-' || v === '') return 0;
+  const n = Number(String(v).replace(/,/g, ''));
+  return isNaN(n) ? 0 : n;
+}
+
+function convertToMaterialRecords(records: DataRecord[]): MaterialRecord[] {
+  return records.map((r, i) => ({
+    key: String(r['排行'] || r['排名'] || r['key'] || i),
+    materialId: String(r['游戏名'] || r['产品名称'] || r['剧名'] || r['高频词'] || r['视频前3秒台词'] || ''),
+    category: String(r._source || r['题材'] || r['标签'] || ''),
+    spend: toNumber(r['素材数'] || r['投放素材数'] || r['关联素材数'] || r['热值']),
+    impressions: 0,
+    clicks: 0,
+    ctr: 0,
+    cpm: 0,
+    cpc: 0,
+    playCount: toNumber(r['投放天数'] || r['持续投放天数']),
+    play2s: 0, play6s: 0, play25: 0, play50: 0, play75: 0, play100: 0,
+    country: String(r['投放国家/地区Top1'] || r['预约国家地区'] || r['公司总部'] || ''),
+    platform: String(r['投放媒体TOP1'] || r['投放媒体Top1'] || r['投放产品Top1'] || ''),
+    status: String(r['排名变化'] || ''),
+    // Preserve all original fields via index signature
+    ...r,
+  }));
+}
+
+function syncToMaterialData() {
+  const allRecords = Object.values(_platformRecordsByCategory).flat();
+  if (allRecords.length === 0) return;
+  const platformConverted = convertToMaterialRecords(allRecords);
+  // Merge: keep existing non-platform data, append platform data
+  const existing = useMaterialDataStore.getState().data;
+  const nonPlatform = existing.filter(d => !d._source && !d._category);
+  useMaterialDataStore.getState().setData([...nonPlatform, ...platformConverted], 'platform_data_merged');
+}
 
 // ---- Types ----
 
@@ -304,6 +363,20 @@ const mockCollectionTasks: CollectionTask[] = [];
 
 // ---- Data Category Definitions ----
 
+const domesticColumns = [
+  { key: '排行', title: '排行', width: 60 },
+  { key: '游戏名', title: '游戏名', width: 160 },
+  { key: '题材', title: '题材', width: 80 },
+  { key: '玩法', title: '玩法', width: 80 },
+  { key: '主投公司', title: '主投公司', width: 200, ellipsis: true },
+  { key: '素材数', title: '素材数', width: 90 },
+  { key: '投放媒体TOP1', title: '媒体TOP1', width: 110 },
+  { key: '投放媒体TOP2', title: '媒体TOP2', width: 110 },
+  { key: '投放媒体TOP3', title: '媒体TOP3', width: 110 },
+  { key: '投放天数', title: '投放天数', width: 90 },
+  { key: '排名变化', title: '排名变化', width: 90 },
+];
+
 const DATA_CATEGORIES: DataCategory[] = [
   {
     id: 'overview', name: '数据总览', icon: '📊',
@@ -311,38 +384,24 @@ const DATA_CATEGORIES: DataCategory[] = [
     columns: [],
   },
   {
-    id: 'domestic', name: '国内买量', icon: '🏠',
-    dir: '国内', files: ['*买量总榜*', '*中重度*', '*轻度游戏*'],
-    columns: [
-      { key: '排行', title: '排行', width: 60 },
-      { key: '游戏名', title: '游戏名', width: 160 },
-      { key: '题材', title: '题材', width: 80 },
-      { key: '玩法', title: '玩法', width: 80 },
-      { key: '主投公司', title: '主投公司', width: 200, ellipsis: true },
-      { key: '素材数', title: '素材数', width: 90 },
-      { key: '投放媒体TOP1', title: '媒体TOP1', width: 110 },
-      { key: '投放媒体TOP2', title: '媒体TOP2', width: 110 },
-      { key: '投放媒体TOP3', title: '媒体TOP3', width: 110 },
-      { key: '投放天数', title: '投放天数', width: 90 },
-      { key: '排名变化', title: '排名变化', width: 90 },
-    ],
+    id: 'domestic_heavy', name: '中重度买量总榜', icon: '🏠',
+    dir: '国内', files: ['*中重度*'],
+    columns: domesticColumns,
+  },
+  {
+    id: 'domestic', name: '游戏买量总榜', icon: '🎮',
+    dir: '国内', files: ['*游戏买量总榜*'],
+    columns: domesticColumns,
+  },
+  {
+    id: 'domestic_light', name: '轻度游戏买量总榜', icon: '🎯',
+    dir: '国内', files: ['*轻度游戏*'],
+    columns: domesticColumns,
   },
   {
     id: 'domestic_new', name: '国内新品', icon: '🆕',
     dir: '国内', files: ['*新品榜*'],
-    columns: [
-      { key: '排行', title: '排行', width: 60 },
-      { key: '游戏名', title: '游戏名', width: 160 },
-      { key: '题材', title: '题材', width: 80 },
-      { key: '玩法', title: '玩法', width: 80 },
-      { key: '主投公司', title: '主投公司', width: 200, ellipsis: true },
-      { key: '素材数', title: '素材数', width: 90 },
-      { key: '投放媒体TOP1', title: '媒体TOP1', width: 110 },
-      { key: '投放媒体TOP2', title: '媒体TOP2', width: 110 },
-      { key: '投放媒体TOP3', title: '媒体TOP3', width: 110 },
-      { key: '投放天数', title: '投放天数', width: 90 },
-      { key: '排名变化', title: '排名变化', width: 90 },
-    ],
+    columns: domesticColumns,
   },
   {
     id: 'domestic_reserve', name: '国内预约', icon: '📋',
@@ -411,7 +470,7 @@ const DATA_CATEGORIES: DataCategory[] = [
   },
   {
     id: 'drama', name: '短剧投放', icon: '🎬',
-    dir: '国外', files: ['*短剧榜*', '*短剧热榜*'],
+    dir: '国外', files: ['*短剧榜_周榜*'],
     columns: [
       { key: '排名', title: '排名', width: 60 },
       { key: '剧名', title: '剧名', width: 200, ellipsis: true },
@@ -427,11 +486,36 @@ const DATA_CATEGORIES: DataCategory[] = [
   },
   {
     id: 'drama_copy', name: '短剧文案', icon: '✍️',
-    dir: '国外', files: ['*文案灵感*', '*黄金*台词*'],
+    dir: '国外', files: ['*文案灵感*'],
+    columns: [
+      { key: '高频词', title: '高频词', width: 200 },
+      { key: '关联文案数', title: '关联文案数', width: 150 },
+    ],
+  },
+  {
+    id: 'drama_hot', name: '短剧热榜', icon: '🔥',
+    dir: '国外', files: ['*热榜*'],
     columns: [
       { key: '排名', title: '排名', width: 60 },
-      { key: '高频词', title: '高频词', width: 150 },
-      { key: '关联文案数', title: '关联文案数', width: 110 },
+      { key: '剧名', title: '剧名', width: 200, ellipsis: true },
+      { key: '国内剧名', title: '国内剧名', width: 160, ellipsis: true },
+      { key: '标签', title: '标签', width: 120, ellipsis: true },
+      { key: '版权方', title: '版权方', width: 140, ellipsis: true },
+      { key: '发行方', title: '发行方', width: 140, ellipsis: true },
+      { key: '承制方', title: '承制方', width: 140, ellipsis: true },
+      { key: '投放产品Top1', title: '产品Top1', width: 180, ellipsis: true },
+      { key: '投放产品Top2', title: '产品Top2', width: 180, ellipsis: true },
+      { key: '投放产品Top3', title: '产品Top3', width: 180, ellipsis: true },
+      { key: '热值', title: '热值', width: 100 },
+      { key: '累计热值', title: '累计热值', width: 100 },
+      { key: '标识', title: '标识', width: 80 },
+    ],
+  },
+  {
+    id: 'drama_golden', name: '黄金台词', icon: '💬',
+    dir: '国外', files: ['*黄金*台词*'],
+    columns: [
+      { key: '排名', title: '排名', width: 60 },
       { key: '视频前3秒台词', title: '黄金台词', width: 300, ellipsis: true },
       { key: '关联素材数', title: '关联素材数', width: 110 },
       { key: '关联产品数', title: '关联产品数', width: 110 },
@@ -501,8 +585,8 @@ export const usePlatformDataStore = create<PlatformDataState>((set, get) => ({
   dataRecords: [],
   dataLoading: false,
 
-  // Overview
-  overviewSummary: null,
+  // Overview - restore from localStorage, fallback to mock
+  overviewSummary: loadFromStorage<OverviewSummary>(OVERVIEW_STORAGE_KEY) || mockOverviewSummary,
   overviewLoading: false,
 
   addModalOpen: false,
@@ -698,7 +782,8 @@ export const usePlatformDataStore = create<PlatformDataState>((set, get) => ({
   // --- Data category actions ---
 
   setActiveCategory: (id: string) => {
-    set({ activeCategory: id, dataRecords: [] });
+    const mock = mockCategoryRecords[id] || [];
+    set({ activeCategory: id, dataRecords: mock });
   },
 
   loadCategoryData: async (crawlDir: string, categoryId?: string) => {
@@ -707,19 +792,34 @@ export const usePlatformDataStore = create<PlatformDataState>((set, get) => ({
     if (!category) return;
 
     const electron = (window as any).electronAPI?.platformData;
-    if (!electron?.listCrawledFiles || !electron?.readLocalFile) return;
 
-    set({ dataLoading: true, activeCategory: catId });
+    set({ activeCategory: catId });
+    // Only show loading if no mock data exists for this category
+    if (!mockCategoryRecords[catId]?.length) {
+      set({ dataLoading: true });
+    }
     try {
-      const files: { name: string; path: string; size: number; dir: string }[] = await electron.listCrawledFiles(crawlDir);
+      let files: { name: string; path: string; size: number; dir: string }[];
+
+      if (electron?.listCrawledFiles) {
+        files = await electron.listCrawledFiles(crawlDir);
+      } else {
+        // Browser fallback: use backend API
+        files = await platformApi.listLocalFiles(crawlDir) as unknown as any[];
+      }
+
       const matched = files.filter(f => matchFileToCategory(f.dir, f.name, category));
 
       const allRecords: DataRecord[] = [];
       for (const file of matched) {
         try {
-          const bytes: number[] = await electron.readLocalFile(file.path);
-          const buffer = new Uint8Array(bytes).buffer;
-          const XLSX = await import('xlsx');
+          let buffer: ArrayBuffer;
+          if (electron?.readLocalFile) {
+            const bytes: number[] = await electron.readLocalFile(file.path);
+            buffer = new Uint8Array(bytes).buffer;
+          } else {
+            buffer = await platformApi.readLocalFile(file.path) as unknown as ArrayBuffer;
+          }
           const wb = XLSX.read(buffer, { type: 'array' });
           const ws = wb.Sheets[wb.SheetNames[0]];
           const jsonData = XLSX.utils.sheet_to_json<Record<string, any>>(ws);
@@ -728,9 +828,18 @@ export const usePlatformDataStore = create<PlatformDataState>((set, get) => ({
           }
         } catch {}
       }
-      set({ dataRecords: allRecords, dataLoading: false });
+      // Use real data if found, otherwise mock data
+      const records = allRecords.length > 0 ? allRecords : (mockCategoryRecords[catId] || []);
+      set({ dataRecords: records, dataLoading: false });
+      if (allRecords.length > 0) {
+        saveToStorage(STORAGE_KEY_PREFIX + catId, allRecords);
+        _platformRecordsByCategory[catId] = allRecords;
+        syncToMaterialData();
+      }
     } catch {
-      set({ dataRecords: [], dataLoading: false });
+      const cached = loadFromStorage<DataRecord[]>(STORAGE_KEY_PREFIX + catId);
+      const fallback = cached && cached.length > 0 ? cached : (mockCategoryRecords[catId] || []);
+      set({ dataRecords: fallback, dataLoading: false });
     }
   },
 
@@ -753,6 +862,9 @@ export const usePlatformDataStore = create<PlatformDataState>((set, get) => ({
         dataRecords: categoryId === s.activeCategory ? records : s.dataRecords,
         dataLoading: false,
       }));
+      saveToStorage(STORAGE_KEY_PREFIX + categoryId, records);
+      _platformRecordsByCategory[categoryId] = records;
+      syncToMaterialData();
     } catch {
       set({ dataLoading: false });
     }
@@ -760,11 +872,22 @@ export const usePlatformDataStore = create<PlatformDataState>((set, get) => ({
 
   loadOverviewSummary: async (crawlDir: string) => {
     const electron = (window as any).electronAPI?.platformData;
-    if (!electron?.listCrawledFiles || !electron?.readLocalFile) return;
 
-    set({ overviewLoading: true });
+    // Don't show loading spinner if we already have data
+    const hasData = get().overviewSummary !== null;
+    if (!hasData) {
+      set({ overviewLoading: true });
+    }
     try {
-      const files: { name: string; path: string; size: number; dir: string }[] = await electron.listCrawledFiles(crawlDir);
+      let files: { name: string; path: string; size: number; dir: string }[];
+
+      if (electron?.listCrawledFiles) {
+        files = await electron.listCrawledFiles(crawlDir);
+      } else {
+        // Browser fallback: use backend API
+        files = await platformApi.listLocalFiles(crawlDir) as unknown as any[];
+      }
+
       const categories = get().dataCategories.filter(c => c.id !== 'overview');
 
       // Load ALL records across all categories
@@ -778,9 +901,13 @@ export const usePlatformDataStore = create<PlatformDataState>((set, get) => ({
 
         for (const file of matched) {
           try {
-            const bytes: number[] = await electron.readLocalFile(file.path);
-            const buffer = new Uint8Array(bytes).buffer;
-            const XLSX = await import('xlsx');
+            let buffer: ArrayBuffer;
+            if (electron?.readLocalFile) {
+              const bytes: number[] = await electron.readLocalFile(file.path);
+              buffer = new Uint8Array(bytes).buffer;
+            } else {
+              buffer = await platformApi.readLocalFile(file.path) as unknown as ArrayBuffer;
+            }
             const wb = XLSX.read(buffer, { type: 'array' });
             const ws = wb.Sheets[wb.SheetNames[0]];
             const jsonData = XLSX.utils.sheet_to_json<Record<string, any>>(ws);
@@ -793,6 +920,12 @@ export const usePlatformDataStore = create<PlatformDataState>((set, get) => ({
 
       // Build summary
       const totalRecords = Object.values(allRecordsByCategory).reduce((s, r) => s + r.length, 0);
+
+      // If no real data found, use mock overview
+      if (totalRecords === 0) {
+        set({ overviewSummary: mockOverviewSummary, overviewLoading: false });
+        return;
+      }
 
       const categoryStats = categories.map(cat => ({
         id: cat.id, name: cat.name, icon: cat.icon,
@@ -1187,8 +1320,25 @@ export const usePlatformDataStore = create<PlatformDataState>((set, get) => ({
         },
         overviewLoading: false,
       });
+      saveToStorage(OVERVIEW_STORAGE_KEY, {
+        totalFiles: files.length, totalRecords, categoryStats, topGames, topCompanies,
+        topGenres, topMedia, topCountries, topDramas, insights, avgMaterialPerGame,
+        longTermGames, risingGames, decliningGames, crossRegionCompanies, mediaStrategy,
+        genreByRegion, reserveGames, dramaKeywords, gameplayTypes, publishingDays,
+        topOutboundCompanies, dramaCountryDist, dramaTagCloud, dramaTopProducts, dramaDurationDist,
+      });
+      // Sync all category records to shared MaterialData store
+      Object.assign(_platformRecordsByCategory, allRecordsByCategory);
+      syncToMaterialData();
     } catch {
-      set({ overviewSummary: null, overviewLoading: false });
+      // Fallback to mock data for preview
+      set({ overviewSummary: mockOverviewSummary, overviewLoading: false });
+      saveToStorage(OVERVIEW_STORAGE_KEY, mockOverviewSummary);
+      // Also sync mock data to shared store
+      for (const [catId, records] of Object.entries(mockCategoryRecords)) {
+        _platformRecordsByCategory[catId] = records;
+      }
+      syncToMaterialData();
     }
   },
 

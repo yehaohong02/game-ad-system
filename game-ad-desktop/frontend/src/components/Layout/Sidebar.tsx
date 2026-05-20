@@ -20,13 +20,13 @@ type MenuItem = Required<MenuProps>['items'][number];
 
 const menuItems: MenuItem[] = [
   {
-    key: '/',
-    icon: <DashboardOutlined />,
-    label: '总览仪表盘',
-  },
-  {
     key: '/data',
     icon: <ExperimentOutlined />,
+    label: '买量表格数据',
+  },
+  {
+    key: '/',
+    icon: <DashboardOutlined />,
     label: '数据诊断',
   },
   {
@@ -111,19 +111,6 @@ export default function Sidebar({ collapsed, onCollapse }: SidebarProps) {
         }}
         onClick={() => onCollapse(!collapsed)}
       >
-        <span style={{ fontSize: 24 }}>🎮</span>
-        {!collapsed && (
-          <span
-            style={{
-              fontSize: 16,
-              fontWeight: 600,
-              color: '#e2e8f0',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            买量个人数据分析平台--海外三组开发
-          </span>
-        )}
       </div>
 
       {/* Navigation Menu */}

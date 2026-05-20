@@ -6,26 +6,10 @@ import {
   SettingOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import { useLocation } from 'react-router-dom';
 import { useSettingsStore } from '../../stores/settings';
 import Settings from '../../pages/Settings';
 
-const ROUTE_TITLES: Record<string, string> = {
-  '/': '总览仪表盘',
-  '/data': '数据诊断',
-  '/creative': '创意洞察',
-  '/execution': '智能执行',
-  '/safety': '安全防护',
-  '/memory': '记忆沉淀',
-  '/platform': '平台数据',
-  '/workshop': '制作工坊',
-  '/reports': '报告中心',
-};
-
 export default function TopBar() {
-  const location = useLocation();
-  const basePath = '/' + location.pathname.split('/')[1];
-  const pageTitle = ROUTE_TITLES[basePath] || '买量个人数据分析平台--海外三组开发';
   const [settingsOpen, setSettingsOpen] = useState(false);
   const { aiEnabled } = useSettingsStore();
 
@@ -38,20 +22,15 @@ export default function TopBar() {
           borderBottom: '1px solid #1E293B',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between',
+          justifyContent: 'flex-end',
           padding: '0 24px',
           flexShrink: 0,
+          position: 'relative',
         }}
       >
-        {/* Left: Page Title */}
-        <div
-          style={{
-            fontSize: 18,
-            fontWeight: 600,
-            color: '#e2e8f0',
-          }}
-        >
-          {pageTitle}
+        {/* Left: empty */}
+        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', fontSize: 20, fontWeight: 700, color: '#e2e8f0', whiteSpace: 'nowrap' }}>
+          买量个人数据分析平台--海外三组开发
         </div>
 
         {/* Right: Actions */}

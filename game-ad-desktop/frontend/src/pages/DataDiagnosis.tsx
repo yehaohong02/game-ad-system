@@ -6,24 +6,23 @@ import {
 import {
   SearchOutlined, PauseCircleOutlined, PlayCircleOutlined,
   DollarOutlined, RobotOutlined, SendOutlined,
-  DownOutlined, LeftOutlined, RightOutlined,
+  RightOutlined,
   PlusOutlined, DeleteOutlined,
   FileImageOutlined, BarChartOutlined, BulbOutlined,
   TagsOutlined, SwapOutlined,
   CalendarOutlined, FilterOutlined, SortAscendingOutlined,
   DownloadOutlined, SettingOutlined, CaretDownOutlined,
   CaretRightOutlined, ColumnWidthOutlined,
-  MenuUnfoldOutlined, UploadOutlined,
+  UploadOutlined,
 } from '@ant-design/icons';
 import { useDataDiagnosisStore } from '../stores/dataDiagnosis';
 import { useCreativeInsightStore, Creative } from '../stores/creativeInsight';
-import materialDataJson from '../data/materialData.json';
+import { useMaterialDataStore } from '../stores/materialData';
 
 const { Text } = Typography;
 const { TextArea } = Input;
 
 // ===== Theme =====
-const darkBg = '#0f172a';
 const darkHover = '#1e293b';
 const lightBg = '#1a2332';
 const whiteBg = '#111827';
@@ -37,9 +36,6 @@ const cardBg = '#1E293B';
 
 const statusColor: Record<string, string> = { active: 'green', paused: 'gold', completed: 'blue', error: 'red' };
 const statusLabel: Record<string, string> = { active: '投放中', paused: '已暂停', completed: '已完成', error: '异常' };
-
-// ===== Real Material Data (from Excel) =====
-const defaultMaterialData: any[] = materialDataJson as any[];
 
 // ===== Column Groups =====
 const columnGroups = [
@@ -268,71 +264,6 @@ function AiAssistantPanel() {
   );
 }
 
-// ===== Left Sidebar =====
-function LeftSidebar({ collapsed, onCollapse }: { collapsed: boolean; onCollapse: () => void }) {
-  const [activeMenu, setActiveMenu] = useState('designer-material');
-  const menus = [
-    { key: 'designer-material', label: '设计师素材表' },
-    { key: 'designer-tag', label: '设计师标签表' },
-    { key: 'cost-query', label: '素材成本查询' },
-  ];
-
-  if (collapsed) {
-    return (
-      <div style={{
-        width: 48, height: '100%', background: darkBg,
-        display: 'flex', flexDirection: 'column', alignItems: 'center',
-        paddingTop: 12, flexShrink: 0,
-      }}>
-        <MenuUnfoldOutlined style={{ color: '#fff', fontSize: 16, cursor: 'pointer', marginBottom: 20 }} onClick={onCollapse} />
-        {menus.map((m) => (
-          <div key={m.key} onClick={() => setActiveMenu(m.key)} style={{
-            width: 36, height: 36, borderRadius: 6, marginBottom: 8,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-            background: activeMenu === m.key ? primaryColor : 'transparent',
-          }}>
-            <Text style={{ color: '#fff', fontSize: 11 }}>{m.label[0]}</Text>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  return (
-    <div style={{
-      width: 200, height: '100%', background: darkBg,
-      display: 'flex', flexDirection: 'column', flexShrink: 0,
-    }}>
-      <div style={{ padding: '12px 14px 10px', borderBottom: `1px solid ${darkHover}` }}>
-        <Space style={{ cursor: 'pointer' }}>
-          <Text strong style={{ color: '#fff', fontSize: 13 }}>数据分析-海外</Text>
-          <DownOutlined style={{ color: '#94A3B8', fontSize: 9 }} />
-        </Space>
-      </div>
-      <div style={{ flex: 1, padding: '6px 0' }}>
-        {menus.map((m) => (
-          <div key={m.key} onClick={() => setActiveMenu(m.key)} style={{
-            padding: '7px 14px', cursor: 'pointer', margin: '1px 6px', borderRadius: 4,
-            background: activeMenu === m.key ? primaryColor : 'transparent',
-            transition: 'background 0.2s',
-          }}>
-            <Text style={{
-              color: activeMenu === m.key ? '#fff' : '#94A3B8',
-              fontSize: 12, fontWeight: activeMenu === m.key ? 600 : 400,
-            }}>{m.label}</Text>
-          </div>
-        ))}
-      </div>
-      <div style={{ padding: '8px 14px', borderTop: `1px solid ${darkHover}` }}>
-        <Button type="text" icon={<LeftOutlined />} onClick={onCollapse}
-          style={{ color: '#94A3B8', fontSize: 11, padding: 0 }}>
-          收起侧边栏
-        </Button>
-      </div>
-    </div>
-  );
-}
-
 // ===== Custom Columns Panel (with drag-and-drop reorder) =====
 function CustomColumnsPanel({ visible, onClose, columnVisibility, onToggleColumn, columnOrder, onReorder }: {
   visible: boolean; onClose: () => void;
@@ -485,10 +416,9 @@ export default function DataDiagnosis() {
   const {
     selectedRows, setSelectedRows, batchPause, batchResume, batchAdjustBudget,
     openAiDrawer, closeAiDrawer, fetchAiDiagnosis, aiDrawerOpen, aiDiagnosis,
-    importedData, importFileName, setImportedData, dataUpdatedAt,
+    importFileName, setImportedData, dataUpdatedAt,
   } = useDataDiagnosisStore();
 
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [customColVisible, setCustomColVisible] = useState(false);
   const [activeDimension, setActiveDimension] = useState('material-id');
 
@@ -597,6 +527,7 @@ export default function DataDiagnosis() {
       }
 
       setImportedData(parsed, file.name);
+      useMaterialDataStore.getState().setData(parsed, file.name);
       message.success(`导入成功: ${parsed.length} 条数据 (${file.name})`);
     } catch (err: any) {
       message.error('导入失败: ' + err.message);
@@ -619,8 +550,8 @@ export default function DataDiagnosis() {
     setTagTags([]); setPersonalConfig(undefined); message.success('筛选条件已重置');
   };
 
-  // Active data source: imported or mock
-  const activeData = importedData || defaultMaterialData;
+  // Active data source: shared store (reactive across all modules)
+  const activeData = useMaterialDataStore(s => s.data);
 
   // Filter data
   const filteredData = activeData.filter((row) => {
@@ -727,9 +658,6 @@ export default function DataDiagnosis() {
 
   return (
     <div style={{ display: 'flex', height: '100%', overflow: 'hidden', margin: -24 }}>
-      {/* Left Sidebar */}
-      <LeftSidebar collapsed={sidebarCollapsed} onCollapse={() => setSidebarCollapsed(!sidebarCollapsed)} />
-
       {/* Main Content */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: whiteBg }}>
         {/* Header */}
@@ -739,7 +667,7 @@ export default function DataDiagnosis() {
         }}>
           <Space size={6}>
             <BarChartOutlined style={{ color: primaryColor, fontSize: 14 }} />
-            <Text strong style={{ color: textPrimary, fontSize: 13 }}>素材数据分析诊断</Text>
+            <Text strong style={{ color: textPrimary, fontSize: 13 }}>数据表格</Text>
           </Space>
           <Space size={6}>
             {importFileName && <Tag color="green" style={{ fontSize: 10 }}>{importFileName}</Tag>}

@@ -60,6 +60,11 @@ export const platformApi = {
   getCreatives: (platform: string) => api.get('/platform/creatives', { params: { platform } }),
   getRankings: (type: string) => api.get('/platform/rankings', { params: { type } }),
   crossValidate: () => api.post('/platform/cross-validate'),
+  // Local file access (browser mode fallback for electronAPI)
+  listLocalFiles: (crawlDir: string) =>
+    api.get('/platform/files', { params: { crawl_dir: crawlDir } }),
+  readLocalFile: (filePath: string) =>
+    api.get('/platform/file', { params: { path: filePath }, responseType: 'arraybuffer' }),
 };
 export const reportsApi = {
   getDaily: (date?: string) => api.get('/reports/daily', { params: date ? { date } : {} }),
