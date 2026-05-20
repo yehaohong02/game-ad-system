@@ -1,0 +1,100 @@
+version: "3.9"
+
+services:
+  # FastAPI 应用服务
+  app:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile
+    container_name: game-ad-system-app
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    env_file:
+      - ../.env
+    environment:
+      - CLICKHOUSE_HOST=clickhouse
+      - REDIS_HOST=redis
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ../src:/app/src
+      - ../api:/app/api
+      - ../dags:/app/dags
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # ClickHouse 数据仓库
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.1
+    container_name: game-ad-system-clickhouse
+    ports:
+      - "${CLICKHOUSE_HTTP_PORT:-8123}:8123"
+      - "${CLICKHOUSE_TCP_PORT:-9000}:9000"
+    environment:
+      CLICKHOUSE_DB: ${CLICKHOUSE_DB:-game_ad}
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER:-default}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-}
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "clickhouse-client", "--query", "SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis 缓存
+  redis:
+    image: redis:7-alpine
+    container_name: game-ad-system-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Airflow 任务调度
+  airflow:
+    image: apache/airflow:2.8.1
+    container_name: game-ad-system-airflow
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: sqlite:////opt/airflow/airflow.db
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW_SECRET_KEY:-your-secret-key}
+    ports:
+      - "${AIRFLOW_PORT:-8080}:8080"
+    volumes:
+      - ../dags:/opt/airflow/dags
+    entrypoint: /bin/bash
+    command: >
+      -c "
+      airflow db init &&
+      airflow users create --username ${AIRFLOW_USER:-admin} --password ${AIRFLOW_PASSWORD:-admin} --firstname Admin --lastname User --role Admin --email ${AIRFLOW_EMAIL:-admin@example.com} &&
+      airflow webserver
+      "
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  clickhouse_data:
+  redis_data:

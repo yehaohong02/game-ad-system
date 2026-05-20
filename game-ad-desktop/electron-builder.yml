@@ -1,0 +1,26 @@
+appId: com.gamead.desktop
+productName: 买量个人数据分析平台
+directories:
+  output: release
+files:
+  - dist-electron/**/*
+  - dist/**/*
+  - "!node_modules/**/*"
+extraResources:
+  - from: backend/
+    to: backend/
+  - from: services/
+    to: services/
+win:
+  target: nsis
+  icon: assets/icon.ico
+nsis:
+  oneClick: false
+  perMachine: true
+  allowToChangeInstallationDirectory: true
+  installerIcon: assets/icon.ico
+  uninstallerIcon: assets/icon.ico
+  installerHeaderIcon: assets/icon.ico
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: 买量个人数据分析平台

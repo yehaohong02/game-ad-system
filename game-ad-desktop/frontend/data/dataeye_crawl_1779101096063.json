@@ -1,0 +1,86 @@
+{
+  "广告创意": {
+    "url": "https://oversea-v2.dataeye.com/creative/material",
+    "period": "近30天",
+    "totalRows": 0,
+    "rows": [],
+    "headers": []
+  },
+  "素材筛选": {
+    "url": "https://oversea-v2.dataeye.com/creative/material",
+    "period": "近30天",
+    "totalRows": 0,
+    "rows": [],
+    "headers": []
+  },
+  "HOT": {
+    "url": "https://oversea-v2.dataeye.com/creative/material",
+    "period": "近30天",
+    "totalRows": 0,
+    "rows": [],
+    "headers": []
+  },
+  "可玩广告": {
+    "url": "https://oversea-v2.dataeye.com/creative/playable",
+    "period": "近30天",
+    "totalRows": 0,
+    "rows": [],
+    "headers": []
+  },
+  "W2A落地页": {
+    "url": "https://oversea-v2.dataeye.com/creative/w2a",
+    "period": "近30天",
+    "totalRows": 0,
+    "rows": [],
+    "headers": []
+  },
+  "热门BGM榜": {
+    "url": "https://oversea-v2.dataeye.com/creative/bgm",
+    "period": "近30天",
+    "totalRows": 0,
+    "rows": [],
+    "headers": []
+  },
+  "文案灵感": {
+    "url": "https://oversea-v2.dataeye.com/creative/copywriter",
+    "period": "近30天",
+    "totalRows": 0,
+    "rows": [],
+    "headers": []
+  },
+  "黄金3s台词": {
+    "url": "https://oversea-v2.dataeye.com/creative/golden3s",
+    "period": "近30天",
+    "totalRows": 0,
+    "rows": [],
+    "headers": []
+  },
+  "预约落地页": {
+    "url": "https://oversea-v2.dataeye.com/creative/target-page",
+    "period": "近30天",
+    "totalRows": 0,
+    "rows": [],
+    "headers": []
+  },
+  "中国内地出海榜": {
+    "url": "https://oversea-v2.dataeye.com/rank/overseas",
+    "period": "近30天",
+    "totalRows": 0,
+    "rows": [],
+    "headers": []
+  },
+  "游戏买量总榜": {
+    "url": "https://oversea-v2.dataeye.com/rank/transactions",
+    "period": "近30天",
+    "totalRows": 0,
+    "rows": [],
+    "headers": []
+  },
+  "游戏预约榜": {
+    "url": "https://oversea-v2.dataeye.com/rank/appointment",
+    "period": "近30天",
+    "totalRows": 0,
+    "rows": [],
+    "headers": []
+  }
+}

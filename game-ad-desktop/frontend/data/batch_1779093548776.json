@@ -1,0 +1,474 @@
+{
+  "flowName": "01",
+  "results": [
+    {
+      "stepIndex": 0,
+      "name": "AdXray - DataEye广告透视",
+      "url": "https://oversea-v2.dataeye.com/rank/overseas",
+      "captures": [
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step0_p0.png",
+          "index": 0,
+          "scrollY": 0
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step0_p1.png",
+          "index": 1,
+          "scrollY": 1056
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step0_p2.png",
+          "index": 2,
+          "scrollY": 2112
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step0_p3.png",
+          "index": 3,
+          "scrollY": 3168
+        }
+      ],
+      "captureCount": 4,
+      "screenshotPath": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step0_p0.png",
+      "filename": "batch_1779093548776_step0_p0.png",
+      "pageText": "海外版\n工作台\n首页\n我的素材库\n我的关注\n产品对比\n广告创意\n素材筛选\nHOT\n可玩广告\nW2A落地页\n热门BGM榜\n文案灵感\n黄金3s台词\n预约落地页\n热门游戏榜单\n中国内地出海榜\n游戏买量总榜\n游戏预约榜\n应用商店榜单\nApp Store\nGoogle Play\n游戏上架监控\n下载收入排行榜\nNEW\n市场情报透视\n预约日历\n节日营销日历\n大盘透视\n媒体透视\n公司透视\n国家/地区透视\n海外行业\nHOT\n已选：\n选择常用筛选项\n国内行业版\n国内游戏版\n海外游戏版\n海外行业版\n我的素材库\n中文\n中国内地出海榜\n已选：\n选择常用筛选项\n媒体:\nFacebook\nFacebookAudience\nInstagram\nMessenger\nAdMob\nUnity3D\nAppLovin\nYouTube\nTikTok\n更多\n题材:\n魔幻\n传奇\n三国\n战争\n二次元\n仙侠\n武侠\n末日\n宫廷\n女性\n西部\n黑帮\n科幻\n现代\n音乐\n体育\n冒险\n海盗\n恐怖\n更多\n国家/地区:\n美国\n日本\n韩国\n印度尼西亚\n印度\n菲律宾\n巴西\n西班牙\n新加坡\n泰国\n中国台湾\n越南\n更多\n基础筛选:\n游戏玩法\n资费类型\n手机平台",
+      "scrollHeight": 3680,
+      "viewportHeight": 1056,
+      "timestamp": "2026-05-18T08:39:17.137Z"
+    },
+    {
+      "stepIndex": 1,
+      "name": "AdXray - DataEye广告透视",
+      "url": "https://oversea-v2.dataeye.com/rank/transactions",
+      "captures": [
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step1_p0.png",
+          "index": 0,
+          "scrollY": 0
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step1_p1.png",
+          "index": 1,
+          "scrollY": 1056
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step1_p2.png",
+          "index": 2,
+          "scrollY": 2112
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step1_p3.png",
+          "index": 3,
+          "scrollY": 3168
+        }
+      ],
+      "captureCount": 4,
+      "screenshotPath": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step1_p0.png",
+      "filename": "batch_1779093548776_step1_p0.png",
+      "pageText": "海外版\n工作台\n首页\n我的素材库\n我的关注\n产品对比\n广告创意\n素材筛选\nHOT\n可玩广告\nW2A落地页\n热门BGM榜\n文案灵感\n黄金3s台词\n预约落地页\n热门游戏榜单\n中国内地出海榜\n游戏买量总榜\n游戏预约榜\n应用商店榜单\nApp Store\nGoogle Play\n游戏上架监控\n下载收入排行榜\nNEW\n市场情报透视\n预约日历\n节日营销日历\n大盘透视\n媒体透视\n公司透视\n国家/地区透视\n海外行业\nHOT\n已选：\n选择常用筛选项\n国内行业版\n国内游戏版\n海外游戏版\n海外行业版\n我的素材库\n中文\n游戏买量总榜\n已选：\n选择常用筛选项\n媒体:\nFacebook\nFacebookAudience\nInstagram\nMessenger\nAdMob\nUnity3D\nAppLovin\n更多\n题材:\n魔幻\n传奇\n三国\n战争\n二次元\n仙侠\n武侠\n末日\n宫廷\n女性\n西部\n黑帮\n更多\n国家/地区:\n美国\n日本\n韩国\n印度尼西亚\n印度\n菲律宾\n巴西\n西班牙\n更多\n基础筛选:\n游戏玩法\n资费类型\n手机平台\n产品类型\n合并相同产品\n只看新产品\n高级筛选:\n日榜\n周榜\n月榜\n2026-05-11 ~ 2026-",
+      "scrollHeight": 4124,
+      "viewportHeight": 1056,
+      "timestamp": "2026-05-18T08:39:25.467Z"
+    },
+    {
+      "stepIndex": 2,
+      "name": "AdXray - DataEye广告透视",
+      "url": "https://oversea-v2.dataeye.com/rank/appointment",
+      "captures": [
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step2_p0.png",
+          "index": 0,
+          "scrollY": 0
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step2_p1.png",
+          "index": 1,
+          "scrollY": 900
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step2_p2.png",
+          "index": 2,
+          "scrollY": 1800
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step2_p3.png",
+          "index": 3,
+          "scrollY": 2700
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step2_p4.png",
+          "index": 4,
+          "scrollY": 3600
+        }
+      ],
+      "captureCount": 5,
+      "screenshotPath": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step2_p0.png",
+      "filename": "batch_1779093548776_step2_p0.png",
+      "pageText": "海外版\n工作台\n首页\n我的素材库\n我的关注\n产品对比\n广告创意\n素材筛选\nHOT\n可玩广告\nW2A落地页\n热门BGM榜\n文案灵感\n黄金3s台词\n预约落地页\n热门游戏榜单\n中国内地出海榜\n游戏买量总榜\n游戏预约榜\n应用商店榜单\nApp Store\nGoogle Play\n游戏上架监控\n下载收入排行榜\nNEW\n市场情报透视\n预约日历\n节日营销日历\n大盘透视\n媒体透视\n公司透视\n国家/地区透视\n海外行业\nHOT\n已选：\n选择常用筛选项\n国内行业版\n国内游戏版\n海外游戏版\n海外行业版\n我的素材库\n中文\nApp Store 预约\nGoogle Play 预约\n已选：\n选择常用筛选项\n国家/地区:\n美国\n日本\n韩国\n印度尼西亚\n印度\n菲律宾\n巴西\n西班牙\n更多\n游戏类型:\n动作\n冒险\n桌面\n卡牌\n娱乐场\n休闲\n骰子\n教育类\n家庭聚会\n音乐\n益智解谜\n更多\n搜索:\n日榜\n周榜\n月榜\n2026-05-18\n共找到350个产品\n按素材数排序\n导出Excel\n排名\t产品名称\t商店ID\t游戏类型\t投放素材数\t预约国家/地区\t首次发现时间\t预计上线时间\n\n\t\n超時空街球對決\nAD\nLMD Games\n\t\n67",
+      "scrollHeight": 4032,
+      "viewportHeight": 900,
+      "timestamp": "2026-05-18T08:39:34.472Z"
+    },
+    {
+      "stepIndex": 3,
+      "name": "AdXray - DataEye广告透视",
+      "url": "https://oversea-v2.dataeye.com/store-rank/monitor",
+      "captures": [
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step3_p0.png",
+          "index": 0,
+          "scrollY": 0
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step3_p1.png",
+          "index": 1,
+          "scrollY": 900
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step3_p2.png",
+          "index": 2,
+          "scrollY": 1800
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step3_p3.png",
+          "index": 3,
+          "scrollY": 2700
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step3_p4.png",
+          "index": 4,
+          "scrollY": 3600
+        }
+      ],
+      "captureCount": 5,
+      "screenshotPath": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step3_p0.png",
+      "filename": "batch_1779093548776_step3_p0.png",
+      "pageText": "海外版\n工作台\n首页\n我的素材库\n我的关注\n产品对比\n广告创意\n素材筛选\nHOT\n可玩广告\nW2A落地页\n热门BGM榜\n文案灵感\n黄金3s台词\n预约落地页\n热门游戏榜单\n中国内地出海榜\n游戏买量总榜\n游戏预约榜\n应用商店榜单\nApp Store\nGoogle Play\n游戏上架监控\n下载收入排行榜\nNEW\n市场情报透视\n预约日历\n节日营销日历\n大盘透视\n媒体透视\n公司透视\n国家/地区透视\n海外行业\nHOT\n已选：\n选择常用筛选项\n国内行业版\n国内游戏版\n海外游戏版\n海外行业版\n我的素材库\n中文\nApp Store\nGoogle Play\n已选：\n选择常用筛选项\n国家/地区:\n美国\n日本\n韩国\n印度尼西亚\n印度\n菲律宾\n巴西\n西班牙\n更多\n游戏类型:\n动作\n冒险\n桌面\n卡牌\n娱乐场\n休闲\n骰子\n教育类\n家庭聚会\n音乐\n益智解谜\n更多\n上架类型:\n预约转上线\n新上架\n恢复上架\n更多筛选:\n至\n共找到5045个产品\n按素材数排序\n导出Excel\n排名\t产品名称\t游戏类型\t投放素材数\t上架国家/地区\t上架时间\n\n\t\n上古：斬妖除魔\nAD\nDoki Studio\n\t角色扮演,游戏,动作\t\n322",
+      "scrollHeight": 4115,
+      "viewportHeight": 900,
+      "timestamp": "2026-05-18T08:39:43.524Z"
+    },
+    {
+      "stepIndex": 4,
+      "name": "AdXray - DataEye广告透视",
+      "url": "https://oversea-v2.dataeye.com/store-rank/revenueRanking",
+      "captures": [
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step4_p0.png",
+          "index": 0,
+          "scrollY": 0
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step4_p1.png",
+          "index": 1,
+          "scrollY": 900
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step4_p2.png",
+          "index": 2,
+          "scrollY": 1800
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step4_p3.png",
+          "index": 3,
+          "scrollY": 2700
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step4_p4.png",
+          "index": 4,
+          "scrollY": 3600
+        }
+      ],
+      "captureCount": 5,
+      "screenshotPath": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step4_p0.png",
+      "filename": "batch_1779093548776_step4_p0.png",
+      "pageText": "海外版\n工作台\n首页\n我的素材库\n我的关注\n产品对比\n广告创意\n素材筛选\nHOT\n可玩广告\nW2A落地页\n热门BGM榜\n文案灵感\n黄金3s台词\n预约落地页\n热门游戏榜单\n中国内地出海榜\n游戏买量总榜\n游戏预约榜\n应用商店榜单\nApp Store\nGoogle Play\n游戏上架监控\n下载收入排行榜\nNEW\n市场情报透视\n预约日历\n节日营销日历\n大盘透视\n媒体透视\n公司透视\n国家/地区透视\n海外行业\nHOT\n国内行业版\n国内游戏版\n海外游戏版\n海外行业版\n我的素材库\n中文\n总榜\n新品榜\n飙升榜\nApp Store\nGoogle Play\n游戏\n全球\n全部\n全部类型\n日榜\n周榜\n月榜\n2026-05-17\n下载榜\n排名\nApp\n下载量\n下载环比\nArrows – Puzzle Escape\nAD\nLessmore GmbH\n免费\n有内购\n上架时间：2025-08-09\n163.6k\n10.03%\nBlock Blast！\nAD\n中国内地\nHungry Studio\n免费\n有内购\n上架时间：2022-04-03\n157.6k\n18.95%\nMagic Sort!\nAD\nGrand Games",
+      "scrollHeight": 4409,
+      "viewportHeight": 900,
+      "timestamp": "2026-05-18T08:39:54.118Z"
+    },
+    {
+      "stepIndex": 5,
+      "name": "AdXray - DataEye广告透视",
+      "url": "https://oversea-v2.dataeye.com/creative/material",
+      "captures": [
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step5_p0.png",
+          "index": 0,
+          "scrollY": 0
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step5_p1.png",
+          "index": 1,
+          "scrollY": 900
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step5_p2.png",
+          "index": 2,
+          "scrollY": 1800
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step5_p3.png",
+          "index": 3,
+          "scrollY": 2700
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step5_p4.png",
+          "index": 4,
+          "scrollY": 3600
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step5_p5.png",
+          "index": 5,
+          "scrollY": 4500
+        }
+      ],
+      "captureCount": 6,
+      "screenshotPath": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step5_p0.png",
+      "filename": "batch_1779093548776_step5_p0.png",
+      "pageText": "海外版\n工作台\n首页\n我的素材库\n我的关注\n产品对比\n广告创意\n素材筛选\nHOT\n可玩广告\nW2A落地页\n热门BGM榜\n文案灵感\n黄金3s台词\n预约落地页\n热门游戏榜单\n中国内地出海榜\n游戏买量总榜\n游戏预约榜\n应用商店榜单\nApp Store\nGoogle Play\n游戏上架监控\n下载收入排行榜\nNEW\n市场情报透视\n预约日历\n节日营销日历\n大盘透视\n媒体透视\n公司透视\n国家/地区透视\n海外行业\nHOT\n已选：\n排序方式:\n最新创意\n保存\n选择常用筛选项\n保留最新筛选记录\n国内行业版\n国内游戏版\n海外游戏版\n海外行业版\n我的素材库\n中文\n全部\n精准搜索\n排除\n已选：\n排序方式:\n最新创意\n保存\n选择常用筛选项\n保留最新筛选记录\n媒体:\nFacebook系\nGoogle系\nFacebook\nFacebookAudience\nInstagram\nMessenger\nAdMob\n更多\n题材:\n魔幻\n传奇\n三国\n战争\n二次元\n仙侠\n武侠\n末日\n宫廷\n女性\n西部\n黑帮\n更多\n国家/地区:\n美国\n日本\n韩国\n印度尼西亚\n印度\n菲律宾\n巴西\n西班牙\n更多\n基础筛选:\n游戏玩法\n产品类型\n素材属性\n",
+      "scrollHeight": 5050,
+      "viewportHeight": 900,
+      "timestamp": "2026-05-18T08:40:04.050Z"
+    },
+    {
+      "stepIndex": 6,
+      "name": "AdXray - DataEye广告透视",
+      "url": "https://oversea-v2.dataeye.com/creative/playable",
+      "captures": [
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step6_p0.png",
+          "index": 0,
+          "scrollY": 0
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step6_p1.png",
+          "index": 1,
+          "scrollY": 900
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step6_p2.png",
+          "index": 2,
+          "scrollY": 1800
+        }
+      ],
+      "captureCount": 3,
+      "screenshotPath": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step6_p0.png",
+      "filename": "batch_1779093548776_step6_p0.png",
+      "pageText": "海外版\n工作台\n首页\n我的素材库\n我的关注\n产品对比\n广告创意\n素材筛选\nHOT\n可玩广告\nW2A落地页\n热门BGM榜\n文案灵感\n黄金3s台词\n预约落地页\n热门游戏榜单\n中国内地出海榜\n游戏买量总榜\n游戏预约榜\n应用商店榜单\nApp Store\nGoogle Play\n游戏上架监控\n下载收入排行榜\nNEW\n市场情报透视\n预约日历\n节日营销日历\n大盘透视\n媒体透视\n公司透视\n国家/地区透视\n海外行业\nHOT\n已选：\n排序方式:\n最新创意\n国内行业版\n国内游戏版\n海外游戏版\n海外行业版\n我的素材库\n中文\n可玩广告\n已选：\n排序方式:\n最新创意\n题材:\n魔幻\n传奇\n三国\n战争\n二次元\n仙侠\n武侠\n末日\n宫廷\n女性\n西部\n黑帮\n更多\n媒体:\nFacebook系\nGoogle系\nFacebook\nFacebookAudience\nInstagram\nMessenger\nAdMob\n更多\n国家/地区:\n美国\n日本\n韩国\n印度尼西亚\n印度\n菲律宾\n巴西\n西班牙\n更多\n更多筛选:\n游戏玩法\n手机平台\n排序方式:\n最新创意\n最新投放\n投放天数\n热度值\n曝光量\n高级筛选:\n今天\n昨天\n近7天\n近30天\n全",
+      "scrollHeight": 2121,
+      "viewportHeight": 900,
+      "timestamp": "2026-05-18T08:40:13.400Z"
+    },
+    {
+      "stepIndex": 7,
+      "name": "AdXray - DataEye广告透视",
+      "url": "https://oversea-v2.dataeye.com/creative/w2a",
+      "captures": [
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step7_p0.png",
+          "index": 0,
+          "scrollY": 0
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step7_p1.png",
+          "index": 1,
+          "scrollY": 900
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step7_p2.png",
+          "index": 2,
+          "scrollY": 1800
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step7_p3.png",
+          "index": 3,
+          "scrollY": 2700
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step7_p4.png",
+          "index": 4,
+          "scrollY": 3600
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step7_p5.png",
+          "index": 5,
+          "scrollY": 4500
+        }
+      ],
+      "captureCount": 6,
+      "screenshotPath": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step7_p0.png",
+      "filename": "batch_1779093548776_step7_p0.png",
+      "pageText": "海外版\n工作台\n首页\n我的素材库\n我的关注\n产品对比\n广告创意\n素材筛选\nHOT\n可玩广告\nW2A落地页\n热门BGM榜\n文案灵感\n黄金3s台词\n预约落地页\n热门游戏榜单\n中国内地出海榜\n游戏买量总榜\n游戏预约榜\n应用商店榜单\nApp Store\nGoogle Play\n游戏上架监控\n下载收入排行榜\nNEW\n市场情报透视\n预约日历\n节日营销日历\n大盘透视\n媒体透视\n公司透视\n国家/地区透视\n海外行业\nHOT\n国内行业版\n国内游戏版\n海外游戏版\n海外行业版\n我的素材库\n中文\nW2A落地页\n题材:\n老虎机\n宾果\nTeen Patti\n推币机\n博彩类纸牌游戏\n扑克\n麻将\n中国棋牌\n乐透/刮刮乐\n捕鱼\n更多\n媒体:\nFacebook系\nGoogle系\nFacebook\nFacebookAudience\nInstagram\nMessenger\nAdMob\n更多\n国家/地区:\n美国\n日本\n韩国\n印度尼西亚\n印度\n菲律宾\n巴西\n西班牙\n更多\n更多筛选:\n手机平台\n高级筛选:\n今天\n昨天\n近7天\n近30天\n全周期\n至\n共找到 55951 组落地页\n按最新创意排序\nPoppy Playtime\n1\n关联广",
+      "scrollHeight": 5126,
+      "viewportHeight": 900,
+      "timestamp": "2026-05-18T08:40:23.552Z"
+    },
+    {
+      "stepIndex": 8,
+      "name": "AdXray - DataEye广告透视",
+      "url": "https://oversea-v2.dataeye.com/creative/bgm",
+      "captures": [
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step8_p0.png",
+          "index": 0,
+          "scrollY": 0
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step8_p1.png",
+          "index": 1,
+          "scrollY": 900
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step8_p2.png",
+          "index": 2,
+          "scrollY": 1800
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step8_p3.png",
+          "index": 3,
+          "scrollY": 2700
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step8_p4.png",
+          "index": 4,
+          "scrollY": 3600
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step8_p5.png",
+          "index": 5,
+          "scrollY": 4500
+        }
+      ],
+      "captureCount": 6,
+      "screenshotPath": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step8_p0.png",
+      "filename": "batch_1779093548776_step8_p0.png",
+      "pageText": "海外版\n工作台\n首页\n我的素材库\n我的关注\n产品对比\n广告创意\n素材筛选\nHOT\n可玩广告\nW2A落地页\n热门BGM榜\n文案灵感\n黄金3s台词\n预约落地页\n热门游戏榜单\n中国内地出海榜\n游戏买量总榜\n游戏预约榜\n应用商店榜单\nApp Store\nGoogle Play\n游戏上架监控\n下载收入排行榜\nNEW\n市场情报透视\n预约日历\n节日营销日历\n大盘透视\n媒体透视\n公司透视\n国家/地区透视\n海外行业\nHOT\n国内行业版\n国内游戏版\n海外游戏版\n海外行业版\n我的素材库\n中文\nTik Tok热门音乐\nFacebook热门音乐\nYouTube热门音乐\n近7天\n近30天\n近120天\n美国\n首次进入前一百的热点\n可商用音乐\n排名\t歌曲名称\t歌手\t操作\n\n1\n\t\nFiesta Mexicana\nNEW\n\t\nMusica Mexicana\n\t查看详情\n\n2\n77\n\t\nEl Cinco de Mayo (Mariachi)\n\t\nDavid Peña\n\t查看详情\n\n3\n\t\nTake My Space\n可商用音乐\n\t\nnimino\n\t查看详情\n\n4\n\t\nREDRED\nNEW\n\t\nCORTIS\n\t查看详情\n\n",
+      "scrollHeight": 5253,
+      "viewportHeight": 900,
+      "timestamp": "2026-05-18T08:40:33.238Z"
+    },
+    {
+      "stepIndex": 9,
+      "name": "AdXray - DataEye广告透视",
+      "url": "https://oversea-v2.dataeye.com/creative/copywriter",
+      "captures": [
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step9_p0.png",
+          "index": 0,
+          "scrollY": 0
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step9_p1.png",
+          "index": 1,
+          "scrollY": 900
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step9_p2.png",
+          "index": 2,
+          "scrollY": 1800
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step9_p3.png",
+          "index": 3,
+          "scrollY": 2700
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step9_p4.png",
+          "index": 4,
+          "scrollY": 3600
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step9_p5.png",
+          "index": 5,
+          "scrollY": 4500
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step9_p6.png",
+          "index": 6,
+          "scrollY": 5400
+        }
+      ],
+      "captureCount": 7,
+      "screenshotPath": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step9_p0.png",
+      "filename": "batch_1779093548776_step9_p0.png",
+      "pageText": "海外版\n工作台\n首页\n我的素材库\n我的关注\n产品对比\n广告创意\n素材筛选\nHOT\n可玩广告\nW2A落地页\n热门BGM榜\n文案灵感\n黄金3s台词\n预约落地页\n热门游戏榜单\n中国内地出海榜\n游戏买量总榜\n游戏预约榜\n应用商店榜单\nApp Store\nGoogle Play\n游戏上架监控\n下载收入排行榜\nNEW\n市场情报透视\n预约日历\n节日营销日历\n大盘透视\n媒体透视\n公司透视\n国家/地区透视\n海外行业\nHOT\n已选：\n选择常用筛选项\n保留最新筛选记录\n国内行业版\n国内游戏版\n海外游戏版\n海外行业版\n我的素材库\n中文\n全部\n已选：\n选择常用筛选项\n保留最新筛选记录\n更多筛选:\n游戏玩法\n语言\n媒体\n文案类型\n时间:\n近7天\n近30天\n近90天\n至\n新增文案\n导出Excel\nTop100高频词\n\nChart\n\nChart with 100 data points.\nplay\nfree\npuzzle\ngames\nenjoy\npara\ndownload\nmatch\nworld\nmaster\nsimulator\nevery\njogo\nbuild\nreal\nfind\nfast\ntown\nescape\n",
+      "scrollHeight": 5446,
+      "viewportHeight": 900,
+      "timestamp": "2026-05-18T08:40:43.588Z"
+    },
+    {
+      "stepIndex": 10,
+      "name": "AdXray - DataEye广告透视",
+      "url": "https://oversea-v2.dataeye.com/creative/golden3s",
+      "captures": [
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step10_p0.png",
+          "index": 0,
+          "scrollY": 0
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step10_p1.png",
+          "index": 1,
+          "scrollY": 900
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step10_p2.png",
+          "index": 2,
+          "scrollY": 1800
+        }
+      ],
+      "captureCount": 3,
+      "screenshotPath": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step10_p0.png",
+      "filename": "batch_1779093548776_step10_p0.png",
+      "pageText": "海外版\n工作台\n首页\n我的素材库\n我的关注\n产品对比\n广告创意\n素材筛选\nHOT\n可玩广告\nW2A落地页\n热门BGM榜\n文案灵感\n黄金3s台词\n预约落地页\n热门游戏榜单\n中国内地出海榜\n游戏买量总榜\n游戏预约榜\n应用商店榜单\nApp Store\nGoogle Play\n游戏上架监控\n下载收入排行榜\nNEW\n市场情报透视\n预约日历\n节日营销日历\n大盘透视\n媒体透视\n公司透视\n国家/地区透视\n海外行业\nHOT\n国内行业版\n国内游戏版\n海外游戏版\n海外行业版\n我的素材库\n中文\n黄金3s台词\n已选：\n选择常用筛选项\n媒体:\nFacebook系\nGoogle系\nFacebook\nFacebookAudience\nInstagram\nMessenger\nAdMob\n更多\n题材:\n魔幻\n传奇\n三国\n战争\n二次元\n仙侠\n武侠\n末日\n宫廷\n女性\n西部\n黑帮\n更多\n更多筛选:\n国家/地区\n游戏玩法\n语言\n手机平台\n高级筛选:\n日榜\n周榜\n月榜\n2026-05-11 ~ 2026-05-17\n新台词\n共找到 228582 个台词\n按素材数排序\n导出Excel\n排名\t视频前3秒台词\t关联素材数\t关联产品数\t关",
+      "scrollHeight": 2218,
+      "viewportHeight": 900,
+      "timestamp": "2026-05-18T08:40:51.248Z"
+    },
+    {
+      "stepIndex": 11,
+      "name": "AdXray - DataEye广告透视",
+      "url": "https://oversea-v2.dataeye.com/creative/target-page",
+      "captures": [
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step11_p0.png",
+          "index": 0,
+          "scrollY": 0
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step11_p1.png",
+          "index": 1,
+          "scrollY": 900
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step11_p2.png",
+          "index": 2,
+          "scrollY": 1800
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step11_p3.png",
+          "index": 3,
+          "scrollY": 2700
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step11_p4.png",
+          "index": 4,
+          "scrollY": 3600
+        },
+        {
+          "path": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step11_p5.png",
+          "index": 5,
+          "scrollY": 4500
+        }
+      ],
+      "captureCount": 6,
+      "screenshotPath": "D:\\CC\\game-ad-desktop\\frontend\\data\\screenshots\\batch_1779093548776_step11_p0.png",
+      "filename": "batch_1779093548776_step11_p0.png",
+      "pageText": "海外版\n工作台\n首页\n我的素材库\n我的关注\n产品对比\n广告创意\n素材筛选\nHOT\n可玩广告\nW2A落地页\n热门BGM榜\n文案灵感\n黄金3s台词\n预约落地页\n热门游戏榜单\n中国内地出海榜\n游戏买量总榜\n游戏预约榜\n应用商店榜单\nApp Store\nGoogle Play\n游戏上架监控\n下载收入排行榜\nNEW\n市场情报透视\n预约日历\n节日营销日历\n大盘透视\n媒体透视\n公司透视\n国家/地区透视\n海外行业\nHOT\n国内行业版\n国内游戏版\n海外游戏版\n海外行业版\n我的素材库\n中文\n预约落地页\n题材:\n魔幻\n传奇\n三国\n战争\n二次元\n仙侠\n武侠\n末日\n宫廷\n女性\n西部\n黑帮\n更多\n媒体:\nFacebook系\nGoogle系\nFacebook\nFacebookAudience\nInstagram\nMessenger\nAdMob\n更多\n国家/地区:\n美国\n日本\n韩国\n印度尼西亚\n印度\n菲律宾\n巴西\n西班牙\n更多\n更多筛选:\n游戏玩法\n手机平台\n高级筛选:\n今天\n昨天\n近7天\n近30天\n全周期\n至\n共找到 5988 组落地页\n按最新创意排序\nオハヨーカイ！ヒーロー\n|\nJoy Nice Games\n20",
+      "scrollHeight": 5126,
+      "viewportHeight": 900,
+      "timestamp": "2026-05-18T08:41:01.351Z"
+    }
+  ],
+  "createdAt": "2026-05-18T08:41:01.351Z"
+}

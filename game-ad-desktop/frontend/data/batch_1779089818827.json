@@ -1,0 +1,18 @@
+{
+  "flowName": "unnamed",
+  "results": [
+    {
+      "stepIndex": 0,
+      "name": "AdXray - DataEye广告透视",
+      "url": "https://oversea-v2.dataeye.com/creative/material",
+      "error": "UnknownVizError"
+    },
+    {
+      "stepIndex": 1,
+      "name": "AdXray - DataEye广告透视",
+      "url": "https://oversea-v2.dataeye.com/creative/material",
+      "error": "UnknownVizError"
+    }
+  ],
+  "createdAt": "2026-05-18T07:37:14.878Z"
+}

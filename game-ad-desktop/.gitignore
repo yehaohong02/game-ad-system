@@ -1,0 +1,28 @@
+# Node
+node_modules/
+*.log
+*.tsbuildinfo
+
+# Build output
+dist/
+dist-electron/
+release/
+.vite/
+
+# Python
+*.pyc
+__pycache__/
+*.egg-info/
+.venv/
+
+# Environment
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
