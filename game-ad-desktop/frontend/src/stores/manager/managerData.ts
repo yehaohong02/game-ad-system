@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { useMaterialDataStore, MaterialRecord } from '../materialData';
+import managerMaterialDataJson from '../../data/managerMaterialData.json';
 
 export interface DesignerStats {
   name: string;
@@ -123,15 +124,25 @@ export const useManagerDataStore = create<ManagerDataState>((set) => ({
   selectedDesigner: null,
   setSelectedDesigner: (name) => set({ selectedDesigner: name }),
   refresh: () => {
-    const data = useMaterialDataStore.getState().data;
     set({ loading: true });
-    const designers = deriveDesigners(data);
-    set({ designers, loading: false });
+    const data = managerMaterialDataJson as unknown as MaterialRecord[];
+    if (data.length > 0) {
+      set({ designers: deriveDesigners(data), loading: false });
+    } else {
+      const fallback = useMaterialDataStore.getState().data;
+      set({ designers: deriveDesigners(fallback), loading: false });
+    }
   },
 }));
 
-// Subscribe to materialData store changes to auto-refresh
-useMaterialDataStore.subscribe((state) => {
-  const designers = deriveDesigners(state.data);
-  useManagerDataStore.setState({ designers, loading: false });
-});
+// Auto-refresh on mount with JSON data
+const jsonData = managerMaterialDataJson as unknown as MaterialRecord[];
+if (jsonData.length > 0) {
+  useManagerDataStore.setState({ designers: deriveDesigners(jsonData), loading: false });
+} else {
+  // Fallback: subscribe to materialData store
+  useMaterialDataStore.subscribe((state) => {
+    const designers = deriveDesigners(state.data);
+    useManagerDataStore.setState({ designers, loading: false });
+  });
+}
