@@ -1,17 +1,23 @@
 import { useState } from 'react';
-import { Input, Badge, Avatar, Space, Drawer, Tooltip } from 'antd';
+import { Input, Badge, Avatar, Space, Drawer, Dropdown, Button } from 'antd';
 import {
   SearchOutlined,
   BellOutlined,
   SettingOutlined,
   UserOutlined,
+  TeamOutlined,
 } from '@ant-design/icons';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useSettingsStore } from '../../stores/settings';
+import { useManagerModeStore } from '../../stores/managerMode';
 import Settings from '../../pages/Settings';
 
 export default function TopBar() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const { aiEnabled } = useSettingsStore();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isManagerMode = location.pathname.startsWith('/manager');
 
   return (
     <>
@@ -51,14 +57,26 @@ export default function TopBar() {
               style={{ fontSize: 18, color: '#94a3b8', cursor: 'pointer' }}
             />
           </Badge>
-          <Tooltip title={aiEnabled ? 'AI 已激活 · 点击设置' : 'AI 未激活 · 点击配置'}>
+          {isManagerMode && (
+            <Button size="small" icon={<TeamOutlined />} onClick={() => { useManagerModeStore.getState().setMode('designer'); navigate('/'); }}
+              style={{ borderColor: '#3b82f6', color: '#3b82f6' }}>
+              切换回设计师模式
+            </Button>
+          )}
+          <Dropdown menu={{
+            items: [
+              { key: 'settings', label: '系统设置', icon: <SettingOutlined /> },
+              ...(!isManagerMode ? [{ key: 'manager', label: '管理者模式', icon: <TeamOutlined /> }] : []),
+            ],
+            onClick: ({ key }) => {
+              if (key === 'settings') setSettingsOpen(true);
+              if (key === 'manager') { useManagerModeStore.getState().setMode('manager'); navigate('/manager'); }
+            }
+          }}>
             <Badge dot status={aiEnabled ? 'success' : 'error'} offset={[-4, 4]}>
-              <SettingOutlined
-                style={{ fontSize: 18, color: '#94a3b8', cursor: 'pointer' }}
-                onClick={() => setSettingsOpen(true)}
-              />
+              <SettingOutlined style={{ fontSize: 18, color: '#94a3b8', cursor: 'pointer' }} />
             </Badge>
-          </Tooltip>
+          </Dropdown>
           <Avatar
             size={32}
             icon={<UserOutlined />}

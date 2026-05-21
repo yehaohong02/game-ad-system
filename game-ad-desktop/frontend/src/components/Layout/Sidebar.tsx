@@ -76,7 +76,21 @@ export default function Sidebar({ collapsed, onCollapse }: SidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const selectedKey = '/' + location.pathname.split('/')[1];
+  const isManagerMode = location.pathname.startsWith('/manager');
+
+  const selectedKey = isManagerMode
+    ? (location.pathname === '/manager' ? '/manager' : location.pathname)
+    : '/' + location.pathname.split('/')[1];
+
+  const effectiveMenuItems = isManagerMode
+    ? menuItems.map(item => {
+        if (!item) return item;
+        if ('type' in item && item.type === 'divider') return item;
+        const originalKey = item.key as string;
+        const newKey = originalKey === '/' ? '/manager' : `/manager${originalKey}`;
+        return { ...item, key: newKey };
+      })
+    : menuItems;
 
   const handleMenuClick: MenuProps['onClick'] = ({ key }) => {
     navigate(key);
@@ -119,7 +133,7 @@ export default function Sidebar({ collapsed, onCollapse }: SidebarProps) {
           theme="dark"
           mode="inline"
           selectedKeys={[selectedKey]}
-          items={menuItems}
+          items={effectiveMenuItems}
           onClick={handleMenuClick}
           inlineCollapsed={collapsed}
           style={{
