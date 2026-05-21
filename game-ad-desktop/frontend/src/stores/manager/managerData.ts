@@ -41,12 +41,17 @@ function computeDesignerStats(name: string, materials: MaterialRecord[]): Design
     ? materials.reduce((sum, m) => sum + (m.playCount > 0 ? m.play100 / m.playCount : 0), 0) / materialCount
     : 0;
 
-  // Efficiency score: weighted combination of normalized metrics (0-100)
-  const ctrScore = Math.min(avgCtr / 5, 1) * 30;       // CTR weight 30, 5% as max
-  const playScore = Math.min(avgPlay6sRate, 1) * 30;    // Play6s rate weight 30
-  const spendScore = Math.min(totalSpend / 10000, 1) * 20; // Spend volume weight 20
-  const volumeScore = Math.min(materialCount / 20, 1) * 20; // Material count weight 20
-  const efficiencyScore = Math.round(ctrScore + playScore + spendScore + volumeScore);
+  // Efficiency score: 3 components (0-100)
+  // CTR score (weight 40): closeness to 0.015 target
+  const ctrTarget = 0.015;
+  const ctrScore = (1 - Math.min(Math.abs(avgCtr - ctrTarget) / ctrTarget, 1)) * 40;
+  // Completion score (weight 30): play100/playCount closeness to 0.05 target
+  const completionTarget = 0.05;
+  const completionScore = (1 - Math.min(Math.abs(avgPlay100Rate - completionTarget) / completionTarget, 1)) * 30;
+  // Cost efficiency score (weight 30): lower CPM is better, target CPM = $8
+  const cpmTarget = 8;
+  const costScore = (1 - Math.min(Math.abs(avgCpm - cpmTarget) / cpmTarget, 1)) * 30;
+  const efficiencyScore = Math.round(ctrScore + completionScore + costScore);
 
   // Risk level based on anomaly indicators
   let anomalyCount = 0;
@@ -82,8 +87,11 @@ function computeDesignerStats(name: string, materials: MaterialRecord[]): Design
 }
 
 function deriveDesigners(data: MaterialRecord[]): DesignerStats[] {
+  // Filter out summary rows (materialId falsy or '合计')
+  const validData = data.filter(r => r.materialId && r.materialId !== '合计');
+
   const grouped = new Map<string, MaterialRecord[]>();
-  for (const record of data) {
+  for (const record of validData) {
     const designer = (record.designer as string) || 'Unknown';
     if (!grouped.has(designer)) {
       grouped.set(designer, []);
