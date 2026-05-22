@@ -37,14 +37,49 @@ interface MaterialDataState {
   getData: () => MaterialRecord[];
 }
 
+const STORAGE_KEY = 'materialDataStore';
+
+function loadFromStorage(): MaterialRecord[] | null {
+  try {
+    if (localStorage.getItem(STORAGE_KEY + '_cleared') === '1') {
+      return [];
+    }
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        const first = parsed[0];
+        if (first.designer && first.media) {
+          localStorage.removeItem(STORAGE_KEY);
+          return null;
+        }
+        return parsed;
+      }
+    }
+  } catch {}
+  return null;
+}
+
+function saveToStorage(data: MaterialRecord[]) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    localStorage.removeItem(STORAGE_KEY + '_cleared');
+  } catch {}
+}
+
+const initialData = loadFromStorage() || (materialDataJson as MaterialRecord[]);
+
 export const useMaterialDataStore = create<MaterialDataState>((set, get) => ({
-  data: materialDataJson as MaterialRecord[],
+  data: initialData,
   fileName: null,
   updatedAt: null,
-  setData: (data, fileName) => set({
-    data,
-    fileName: fileName || null,
-    updatedAt: new Date().toLocaleString('zh-CN'),
-  }),
+  setData: (data, fileName) => {
+    saveToStorage(data);
+    set({
+      data,
+      fileName: fileName || null,
+      updatedAt: new Date().toLocaleString('zh-CN'),
+    });
+  },
   getData: () => get().data,
 }));

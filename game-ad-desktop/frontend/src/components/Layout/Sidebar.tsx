@@ -82,13 +82,11 @@ export default function Sidebar({ collapsed, onCollapse }: SidebarProps) {
     ? (location.pathname === '/manager' ? '/manager' : location.pathname)
     : '/' + location.pathname.split('/')[1];
 
-  const managerExcludedKeys = ['/platform', '/workshop'];
   const effectiveMenuItems = isManagerMode
     ? menuItems.map(item => {
         if (!item) return item;
         if ('type' in item && item.type === 'divider') return item;
         const originalKey = item.key as string;
-        if (managerExcludedKeys.includes(originalKey)) return item;
         const newKey = originalKey === '/' ? '/manager' : `/manager${originalKey}`;
         return { ...item, key: newKey };
       })

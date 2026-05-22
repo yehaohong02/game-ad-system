@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from api.routes import data, creative, execution, memory
+from api.routes import data, creative, execution, memory, platform, manager
 
 app = FastAPI(
     title="游戏买量系统 API",
@@ -45,6 +45,8 @@ app.include_router(data.router)
 app.include_router(creative.router)
 app.include_router(execution.router)
 app.include_router(memory.router)
+app.include_router(platform.router)
+app.include_router(manager.router)
 
 
 @app.get("/health", tags=["system"])

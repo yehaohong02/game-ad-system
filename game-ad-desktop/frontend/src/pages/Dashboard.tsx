@@ -58,7 +58,6 @@ function MetricChip({ label, value, unit, trend, color }: { label: string; value
 export default function Dashboard() {
   const [title, setTitle] = useState(() => localStorage.getItem('dashboard_title') || '5月设计师数据');
   const [editingTitle, setEditingTitle] = useState(false);
-
   const materialData = useMaterialDataStore(s => s.data);
   const data: any[] = useMemo(() => materialData.filter(r => r.spend > 0), [materialData]);
 
@@ -78,23 +77,14 @@ export default function Dashboard() {
     return { totalSpend, totalImp, totalClicks, totalPlay, totalPlay2s, totalPlay100, avgCpm, avgCtr, avgCpc, completionRate, play2sRate, count: data.length };
   }, [data]);
 
-  // === Health Scores ===
+  // === 效率评分：CTR%×20 + 完播率%×15 + (30−CPM$) ===
   const scores = useMemo(() => {
-    // CTR score: >1.5% = 100, <0.3% = 20
-    const ctrScore = Math.min(100, Math.max(20, (m.avgCtr - 0.3) / 1.2 * 80 + 20));
-    // CPM efficiency: lower = better, <3 = 100, >10 = 30
-    const cpmScore = Math.min(100, Math.max(20, (10 - m.avgCpm) / 7 * 80 + 20));
-    // Completion rate: >8% = 100, <1% = 20
-    const completionScore = Math.min(100, Math.max(20, (m.completionRate * 100 - 1) / 7 * 80 + 20));
-    // Play engagement: 2s play rate >30% = 100, <10% = 30
-    const engageScore = Math.min(100, Math.max(20, (m.play2sRate * 100 - 10) / 20 * 80 + 20));
-    // Material diversity: more categories = better
-    const cats = new Set(data.map(r => r.category)).size;
-    const diversityScore = Math.min(100, Math.max(30, cats * 12));
-    // Overall
-    const overall = Math.round((ctrScore + cpmScore + completionScore + engageScore + diversityScore) / 5);
-    return { overall, ctrScore: Math.round(ctrScore), cpmScore: Math.round(cpmScore), completionScore: Math.round(completionScore), engageScore: Math.round(engageScore), diversityScore: Math.round(diversityScore) };
-  }, [m, data]);
+    const ctrScore = Math.min(m.avgCtr * 20, 40);
+    const completionScore = Math.min(m.completionRate * 1500, 30);
+    const cpmScore = Math.max(0, Math.min(30 - m.avgCpm, 30));
+    const overall = Math.round(ctrScore + completionScore + cpmScore);
+    return { overall, ctrScore: Math.round(ctrScore), cpmScore: Math.round(cpmScore), completionScore: Math.round(completionScore), engageScore: 0, diversityScore: 0 };
+  }, [m]);
 
   // === Category Analysis ===
   const categoryData = useMemo(() => {
@@ -226,20 +216,21 @@ export default function Dashboard() {
         )}
         <div style={{ flex: 1 }} />
         <Tag color="blue" style={{ fontSize: 10 }}>{data.length} 条素材</Tag>
-        <Tag color="green" style={{ fontSize: 10 }}>数据健康度 {scores.overall}/100</Tag>
+        <Tag color="green" style={{ fontSize: 10 }}>效率评分 {scores.overall}/100</Tag>
       </div>
 
       <Row gutter={[8, 8]}>
         {/* Left: Health Scores */}
         <Col span={5}>
-          <Card title={<span style={{ color: '#e2e8f0', fontSize: 12 }}><CheckCircleOutlined /> 数据体检</span>}
+          <Card title={<span style={{ color: '#e2e8f0', fontSize: 12 }}><CheckCircleOutlined /> 效率评分</span>}
             style={{ background: panelBg, border: `1px solid ${border}` }} styles={{ body: { padding: '4px 12px' } }}>
-            <ScoreCard label="CTR 点击率" score={scores.ctrScore} icon={<AimOutlined />} color={blue} />
-            <ScoreCard label="CPM 效率" score={scores.cpmScore} icon={<ThunderboltOutlined />} color={yellow} />
-            <ScoreCard label="完播率" score={scores.completionScore} icon={<PlayCircleOutlined />} color={green} />
-            <ScoreCard label="播放参与度" score={scores.engageScore} icon={<FireOutlined />} color={purple} />
-            <ScoreCard label="素材多样性" score={scores.diversityScore} icon={<BarChartOutlined />} color='#ec4899' />
+            <ScoreCard label="CTR 得分" score={scores.ctrScore} icon={<AimOutlined />} color={blue} />
+            <ScoreCard label="完播 得分" score={scores.completionScore} icon={<PlayCircleOutlined />} color={green} />
+            <ScoreCard label="CPM 得分" score={scores.cpmScore} icon={<ThunderboltOutlined />} color={yellow} />
             <Divider style={{ margin: '8px 0', borderColor: '#1e293b' }} />
+            <Text style={{ color: '#64748b', fontSize: 9, lineHeight: '13px', display: 'block', textAlign: 'center' }}>
+              效率 = CTR%×20 + 完播率%×15 + (30−CPM$)
+            </Text>
             <div style={{ textAlign: 'center', padding: '4px 0' }}>
               <Progress type="circle" percent={scores.overall} size={64} strokeColor={scores.overall >= 60 ? green : yellow}
                 trailColor="#1e293b" format={(p) => <span style={{ color: '#e2e8f0', fontSize: 16, fontWeight: 600 }}>{p}</span>} />

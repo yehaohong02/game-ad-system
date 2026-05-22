@@ -471,6 +471,15 @@ export default function DataDiagnosis() {
       const colMap: Record<string, number> = {};
       headers.forEach((h, i) => { if (h) colMap[h.trim()] = i; });
 
+      // Validate: designer table must NOT have 设计师 and 媒体 columns (22-column format)
+      const headerStr = headers.map(h => String(h || '')).join(',');
+      const hasDesigner = headerStr.includes('设计师');
+      const hasMedia = headerStr.includes('媒体');
+      if (hasDesigner && hasMedia) {
+        message.error('表格格式不匹配！这是管理者设计师素材表（24列），请使用设计师素材表（22列，无"设计师"和"媒体"列）');
+        return false;
+      }
+
       const parsed: any[] = [];
       for (let i = headerIdx + 1; i < rows.length; i++) {
         const row = rows[i];
@@ -676,6 +685,14 @@ export default function DataDiagnosis() {
               <Button icon={<UploadOutlined />} size="small"
                 style={{ borderColor: '#10B981', color: '#10B981', fontSize: 11 }}>导入Excel</Button>
             </Upload>
+            <Button icon={<DeleteOutlined />} size="small"
+              onClick={() => {
+                localStorage.removeItem('materialDataStore');
+                localStorage.setItem('materialDataStore_cleared', '1');
+                window.location.reload();
+              }}
+              style={{ borderColor: '#ef4444', color: '#ef4444', fontSize: 11 }}
+            >清除数据</Button>
             <Button icon={<RobotOutlined />} onClick={handleAiDiagnosis} size="small"
               style={{ background: '#7C3AED', borderColor: '#7C3AED', color: '#fff', fontSize: 11 }}>AI 诊断</Button>
           </Space>

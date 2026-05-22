@@ -70,3 +70,7 @@ export const reportsApi = {
   getDaily: (date?: string) => api.get('/reports/daily', { params: date ? { date } : {} }),
   getWeekly: () => api.get('/reports/weekly'),
 };
+export const managerApi = {
+  getDesigners: () => api.get('/manager/designers'),
+  getDesignerDetail: (name: string) => api.get(`/manager/designers/${name}`),
+};
