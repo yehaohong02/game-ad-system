@@ -620,11 +620,11 @@ export default function DataDiagnosis() {
     category: { title: '游戏分类', dataIndex: 'category', key: 'category', width: 70,
       render: (v: string, record: any) => <Text style={{ color: record.isSummary ? textSecondary : textPrimary, fontSize: 11 }}>{v || '-'}</Text> },
     installs: { title: '安装数', dataIndex: 'installs', key: 'installs', width: 70, sorter: (a: any, b: any) => a.installs - b.installs,
-      render: (v: number, record: any) => <Text style={{ fontSize: 11, color: record.isSummary ? textPrimary : textSecondary }}>{v.toLocaleString()}</Text> },
+      render: (v: number, record: any) => <Text style={{ fontSize: 11, color: record.isSummary ? textPrimary : textSecondary }}>{(v ?? 0).toLocaleString()}</Text> },
     cpi: { title: 'CPI ($)', dataIndex: 'cpi', key: 'cpi', width: 70, sorter: (a: any, b: any) => a.cpi - b.cpi,
-      render: (v: number, record: any) => <Text style={{ fontSize: 11, color: v > 5.5 ? '#EF4444' : record.isSummary ? textPrimary : textSecondary }}>${v.toFixed(2)}</Text> },
+      render: (v: number, record: any) => <Text style={{ fontSize: 11, color: (v ?? 0) > 5.5 ? '#EF4444' : record.isSummary ? textPrimary : textSecondary }}>${(v ?? 0).toFixed(2)}</Text> },
     roas: { title: 'ROAS', dataIndex: 'roas', key: 'roas', width: 70, sorter: (a: any, b: any) => a.roas - b.roas,
-      render: (v: number, record: any) => <Text style={{ fontSize: 11, color: v >= 1 ? '#10B981' : v >= 0.8 ? '#F59E0B' : '#EF4444', fontWeight: record.isSummary ? 600 : 400 }}>{v.toFixed(2)}</Text> },
+      render: (v: number, record: any) => <Text style={{ fontSize: 11, color: (v ?? 0) >= 1 ? '#10B981' : (v ?? 0) >= 0.8 ? '#F59E0B' : '#EF4444', fontWeight: record.isSummary ? 600 : 400 }}>{(v ?? 0).toFixed(2)}</Text> },
   };
 
   // Add material columns from columnGroups

@@ -14,11 +14,24 @@ export interface DesignerStats {
   totalPlayCount: number;
   avgPlay2sRate: number;
   avgPlay6sRate: number;
+  avgPlay25Rate: number;
+  avgPlay50Rate: number;
+  avgPlay75Rate: number;
   avgPlay100Rate: number;
   materials: MaterialRecord[];
   efficiencyScore: number; // 0-100
   riskLevel: 'low' | 'medium' | 'high';
   anomalyCount: number;
+  // Designer grade: S / A / B / C
+  grade: 'S' | 'A' | 'B' | 'C';
+  // Primary media (highest spend)
+  primaryMedia: string;
+  // Material type classification
+  materialType: '图片' | '视频' | '混合';
+  imageCount: number;
+  videoCount: number;
+  // Representative materials (best CPC with spend>0)
+  repMaterials: { materialId: string; media: string; cpc: number; ctr: number; spend: number }[];
   // Per-game breakdown
   gameBreakdown: { game: string; count: number; spend: number; avgCtr: number; avgCpm: number }[];
   // Per-media breakdown
@@ -37,6 +50,16 @@ export interface DesignerStats {
   highCpmCount: number; // cpm > 8
 }
 
+export interface TeamOverview {
+  totalSpend: number;
+  totalImpressions: number;
+  totalClicks: number;
+  overallCpc: number;
+  overallCtr: number;
+  totalMaterials: number;
+  designerCount: number;
+}
+
 function computeDesignerStats(name: string, materials: MaterialRecord[]): DesignerStats {
   const materialCount = materials.length;
   const totalSpend = materials.reduce((sum, m) => sum + (m.spend || 0), 0);
@@ -50,19 +73,20 @@ function computeDesignerStats(name: string, materials: MaterialRecord[]): Design
   // CPM: only average materials with actual CPM data (> 0)
   const cpmMaterials = materials.filter(m => (m.cpm || 0) > 0);
   const avgCpm = cpmMaterials.length > 0 ? cpmMaterials.reduce((sum, m) => sum + (m.cpm || 0), 0) / cpmMaterials.length : 0;
-  const avgCpc = materialCount > 0 ? materials.reduce((sum, m) => sum + (m.cpc || 0), 0) / materialCount : 0;
+  const avgCpc = totalClicks > 0 ? totalSpend / totalClicks : 999;
 
   // Play rates: only average materials with actual play data
   const playMaterials = materials.filter(m => (m.playCount || 0) > 0);
-  const avgPlay2sRate = playMaterials.length > 0
-    ? playMaterials.reduce((sum, m) => sum + (m.play2s / m.playCount), 0) / playMaterials.length
-    : 0;
-  const avgPlay6sRate = playMaterials.length > 0
-    ? playMaterials.reduce((sum, m) => sum + (m.play6s / m.playCount), 0) / playMaterials.length
-    : 0;
-  const avgPlay100Rate = playMaterials.length > 0
-    ? playMaterials.reduce((sum, m) => sum + (m.play100 / m.playCount), 0) / playMaterials.length
-    : 0;
+  const avgPlayRate = (field: keyof MaterialRecord) =>
+    playMaterials.length > 0
+      ? playMaterials.reduce((sum, m) => sum + ((m[field] as number) / m.playCount), 0) / playMaterials.length
+      : 0;
+  const avgPlay2sRate = avgPlayRate('play2s');
+  const avgPlay6sRate = avgPlayRate('play6s');
+  const avgPlay25Rate = avgPlayRate('play25');
+  const avgPlay50Rate = avgPlayRate('play50');
+  const avgPlay75Rate = avgPlayRate('play75');
+  const avgPlay100Rate = avgPlayRate('play100');
 
   // Efficiency score: 3 components (0-100)
   // 效率 = CTR%×20 + 完播率%×15 + (30−CPM)，各项有上下限
@@ -164,6 +188,43 @@ function computeDesignerStats(name: string, materials: MaterialRecord[]): Design
   const lowCtrCount = materials.filter(m => (m.ctr || 0) < 0.003).length;
   const highCpmCount = materials.filter(m => (m.cpm || 0) > 8).length;
 
+  // Material type classification
+  const imageCount = materials.filter(m => {
+    const preview = (m as any).preview || '';
+    return typeof preview === 'string' && (preview.endsWith('.jpg') || preview.endsWith('.png') || preview.endsWith('.jpeg') || preview.endsWith('.webp'));
+  }).length;
+  const videoCount = materials.filter(m => {
+    const preview = (m as any).preview || '';
+    if (typeof preview === 'string' && preview.endsWith('.mp4')) return true;
+    const url = typeof preview === 'object' && preview?.url ? preview.url : '';
+    return typeof url === 'string' && url.endsWith('.mp4');
+  }).length;
+  const materialType: '图片' | '视频' | '混合' =
+    imageCount > 0 && videoCount === 0 ? '图片' :
+    videoCount > 0 && imageCount === 0 ? '视频' : '混合';
+
+  // Primary media (highest spend)
+  const primaryMedia = mediaBreakdown.length > 0 ? mediaBreakdown[0].media : '未知';
+
+  // Representative materials (top 3 by lowest CPC, with spend>0 and clicks>0)
+  const repMaterials = [...materials]
+    .filter(m => (m.spend || 0) > 0 && (m.clicks || 0) > 0)
+    .sort((a, b) => (a.cpc || 0) - (b.cpc || 0))
+    .slice(0, 3)
+    .map(m => ({
+      materialId: m.materialId,
+      media: (m as any).media || '',
+      cpc: m.cpc || 0,
+      ctr: m.ctr || 0,
+      spend: m.spend || 0,
+    }));
+
+  // Designer grade: based on CPC thresholds
+  const grade: 'S' | 'A' | 'B' | 'C' =
+    avgCpc < 0.30 ? 'S' :
+    avgCpc < 0.70 ? 'A' :
+    avgCpc < 1.00 ? 'B' : 'C';
+
   return {
     name,
     materialCount,
@@ -176,11 +237,20 @@ function computeDesignerStats(name: string, materials: MaterialRecord[]): Design
     totalPlayCount,
     avgPlay2sRate,
     avgPlay6sRate,
+    avgPlay25Rate,
+    avgPlay50Rate,
+    avgPlay75Rate,
     avgPlay100Rate,
     materials,
     efficiencyScore,
     riskLevel,
     anomalyCount,
+    grade,
+    primaryMedia,
+    materialType,
+    imageCount,
+    videoCount,
+    repMaterials,
     gameBreakdown,
     mediaBreakdown,
     topMaterials,
@@ -217,6 +287,22 @@ function deriveDesigners(data: MaterialRecord[]): DesignerStats[] {
   return designers;
 }
 
+export function computeTeamOverview(designers: DesignerStats[]): TeamOverview {
+  const totalSpend = designers.reduce((s, d) => s + d.totalSpend, 0);
+  const totalImpressions = designers.reduce((s, d) => s + d.totalImpressions, 0);
+  const totalClicks = designers.reduce((s, d) => s + d.totalClicks, 0);
+  const totalMaterials = designers.reduce((s, d) => s + d.materialCount, 0);
+  return {
+    totalSpend,
+    totalImpressions,
+    totalClicks,
+    overallCpc: totalClicks > 0 ? totalSpend / totalClicks : 0,
+    overallCtr: totalImpressions > 0 ? totalClicks / totalImpressions : 0,
+    totalMaterials,
+    designerCount: designers.length,
+  };
+}
+
 interface ManagerDataState {
   designers: DesignerStats[];
   managerMaterialData: MaterialRecord[];
@@ -232,7 +318,7 @@ const MANAGER_STORAGE_KEY = 'managerMaterialDataStore';
 function loadManagerFromStorage(): MaterialRecord[] | null {
   try {
     if (localStorage.getItem(MANAGER_STORAGE_KEY + '_cleared') === '1') {
-      return [];
+      return null;
     }
     const raw = localStorage.getItem(MANAGER_STORAGE_KEY);
     if (raw) {

@@ -42,7 +42,7 @@ const STORAGE_KEY = 'materialDataStore';
 function loadFromStorage(): MaterialRecord[] | null {
   try {
     if (localStorage.getItem(STORAGE_KEY + '_cleared') === '1') {
-      return [];
+      return null;
     }
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {

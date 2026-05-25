@@ -83,13 +83,20 @@ export default function Sidebar({ collapsed, onCollapse }: SidebarProps) {
     : '/' + location.pathname.split('/')[1];
 
   const effectiveMenuItems = isManagerMode
-    ? menuItems.map(item => {
-        if (!item) return item;
-        if ('type' in item && item.type === 'divider') return item;
-        const originalKey = item.key as string;
-        const newKey = originalKey === '/' ? '/manager' : `/manager${originalKey}`;
-        return { ...item, key: newKey };
-      })
+    ? menuItems
+        .filter(item => {
+          if (!item) return false;
+          if ('type' in item) return true;
+          const key = item.key as string;
+          return key !== '/platform' && key !== '/workshop';
+        })
+        .map(item => {
+          if (!item) return item;
+          if ('type' in item && item.type === 'divider') return item;
+          const originalKey = item.key as string;
+          const newKey = originalKey === '/' ? '/manager' : `/manager${originalKey}`;
+          return { ...item, key: newKey };
+        })
     : menuItems;
 
   const handleMenuClick: MenuProps['onClick'] = ({ key }) => {
