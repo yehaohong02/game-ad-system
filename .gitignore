@@ -45,6 +45,8 @@ desktop.ini
 # ==================== OMC / Claude ====================
 .omc/
 .claude/
+CLAUDE.md
+docs/superpowers/
 
 # ==================== 图片 / 文档 / 数据 ====================
 *.png
@@ -54,6 +56,26 @@ desktop.ini
 *.xlsx
 *.docx
 数据/
+
+# ==================== 临时脚本（根目录开发辅助） ====================
+/audit_data.py
+/calc_*.py
+/check_*.py
+/compare_tables.py
+/convert_excel.py
+/fix_encoding.py
+/init_data.py
+/update_data.py
+/verify_*.py
+/UI.txt
+/encoding_test.txt
+/headers.txt
+/data_summary.txt
+/格式模板.txt
+/openapi.json
+
+# ==================== 错误目录 ====================
+D\CCgame-ad-desktopbackendsrcaiexperts/
 
 # ==================== Docker Build ====================
 # 不忽略 Dockerfile/docker-compose（需要提交）

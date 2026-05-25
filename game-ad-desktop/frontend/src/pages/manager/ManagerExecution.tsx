@@ -423,22 +423,22 @@ export default function ManagerExecution() {
         <Col span={12}>
           <Card style={{ background: cardBg, border: `1px solid ${border}` }} styles={{ body: { padding: '12px 12px 8px' } }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 2 }}>
-              <Text strong style={{ color: text, fontSize: 13 }}>效率评分排名</Text>
-              <Text style={{ color: muted, fontSize: 10, textAlign: 'right', maxWidth: '55%', lineHeight: '14px' }}>各设计师综合效率评分排名，分数越高表现越好</Text>
+              <Text strong style={{ color: text, fontSize: 13 }}>各渠道执行效率</Text>
+              <Text style={{ color: muted, fontSize: 10, textAlign: 'right', maxWidth: '55%', lineHeight: '14px' }}>各设计师在主要渠道的素材制作效率对比，反映渠道执行力</Text>
             </div>
             <ReactECharts option={{
               backgroundColor: 'transparent',
-              tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-              grid: { left: 10, right: 30, top: 4, bottom: 8, containLabel: true },
-              xAxis: { type: 'value', max: 100, axisLabel: { color: muted, fontSize: 10 }, splitLine: { lineStyle: { color: '#1e293b' } } },
-              yAxis: { type: 'category', data: [...designers].sort((a, b) => a.efficiencyScore - b.efficiencyScore).slice(-10).map(d => d.name), axisLabel: { color: text, fontSize: 11 }, axisLine: { lineStyle: { color: border } } },
-              series: [{ type: 'bar', data: [...designers].sort((a, b) => a.efficiencyScore - b.efficiencyScore).slice(-10).map(d => ({ value: d.efficiencyScore, itemStyle: { color: d.efficiencyScore >= 60 ? green : red } })), barWidth: 20, itemStyle: { borderRadius: [0, 4, 4, 0] }, label: { show: true, position: 'right', color: text, fontSize: 10, formatter: (p: any) => p.value + '分' } }]
-            }} style={{ height: 300 }} />
-            <div style={{ marginTop: 4, padding: '4px 8px', background: panelBg, borderRadius: 4 }}>
-              <Text style={{ color: muted, fontSize: 9, lineHeight: '14px' }}>
-                效率 = CTR%×20 + 完播率%×15 + (30−CPM$)，满分100
-              </Text>
-            </div>
+              tooltip: { trigger: 'axis' },
+              legend: { data: [...new Set(designers.flatMap(d => d.mediaBreakdown.slice(0,2).map(m => m.media)))].slice(0,3), textStyle: { color: muted, fontSize: 10 }, top: 0, right: 10 },
+              grid: { left: 10, right: 20, top: 28, bottom: 8, containLabel: true },
+              xAxis: { type: 'category', data: designers.map(d => d.name), axisLabel: { color: muted, fontSize: 10 }, axisLine: { lineStyle: { color: border } } },
+              yAxis: { type: 'value', axisLabel: { color: muted, fontSize: 10 }, splitLine: { lineStyle: { color: '#1e293b' } } },
+              series: [...new Set(designers.flatMap(d => d.mediaBreakdown.slice(0,2).map(m => m.media)))].slice(0,3).map((media, i) => ({
+                name: media, type: 'bar',
+                data: designers.map(d => { const mb = d.mediaBreakdown.find(m => m.media === media); return mb ? mb.count : 0; }),
+                itemStyle: { color: [blue, green, yellow][i] }
+              }))
+            }} style={{ height: 220 }} />
           </Card>
         </Col>
         <Col span={12}>

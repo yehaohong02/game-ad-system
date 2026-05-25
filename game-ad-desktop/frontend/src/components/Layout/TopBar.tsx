@@ -1,23 +1,54 @@
 import { useState } from 'react';
-import { Input, Badge, Avatar, Space, Drawer, Dropdown, Button } from 'antd';
+import { Input, Badge, Avatar, Space, Drawer, Dropdown, Button, Modal, message } from 'antd';
 import {
   SearchOutlined,
   BellOutlined,
   SettingOutlined,
   UserOutlined,
   TeamOutlined,
+  LockOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSettingsStore } from '../../stores/settings';
 import { useManagerModeStore } from '../../stores/managerMode';
 import Settings from '../../pages/Settings';
 
+function isManagerAuthorized(): boolean {
+  return localStorage.getItem('manager_authorized') === '1';
+}
+
 export default function TopBar() {
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [secretKey, setSecretKey] = useState('');
+  const [authError, setAuthError] = useState(false);
   const { aiEnabled } = useSettingsStore();
   const navigate = useNavigate();
   const location = useLocation();
   const isManagerMode = location.pathname.startsWith('/manager');
+
+  const handleManagerAccess = () => {
+    if (isManagerAuthorized()) {
+      useManagerModeStore.getState().setMode('manager');
+      navigate('/manager');
+    } else {
+      setSecretKey('');
+      setAuthError(false);
+      setAuthModalOpen(true);
+    }
+  };
+
+  const handleAuthSubmit = () => {
+    if (secretKey === '789') {
+      localStorage.setItem('manager_authorized', '1');
+      setAuthModalOpen(false);
+      useManagerModeStore.getState().setMode('manager');
+      navigate('/manager');
+      message.success('权限验证通过，欢迎进入管理者模式');
+    } else {
+      setAuthError(true);
+    }
+  };
 
   return (
     <>
@@ -70,7 +101,7 @@ export default function TopBar() {
             ],
             onClick: ({ key }) => {
               if (key === 'settings') setSettingsOpen(true);
-              if (key === 'manager') { useManagerModeStore.getState().setMode('manager'); navigate('/manager'); }
+              if (key === 'manager') { handleManagerAccess(); }
             }
           }}>
             <Badge dot status={aiEnabled ? 'success' : 'error'} offset={[-4, 4]}>
@@ -84,6 +115,49 @@ export default function TopBar() {
           />
         </Space>
       </div>
+
+      <Modal
+        title={<span style={{ color: '#e2e8f0' }}><LockOutlined /> 管理者权限验证</span>}
+        open={authModalOpen}
+        onCancel={() => setAuthModalOpen(false)}
+        footer={null}
+        width={400}
+        styles={{
+          header: { background: '#1E293B', borderBottom: '1px solid #334155' },
+          body: { background: '#1E293B', padding: '20px 24px' },
+          mask: { backdropFilter: 'blur(4px)' },
+        }}
+      >
+        <div style={{ color: '#f59e0b', fontSize: 13, marginBottom: 16, background: 'rgba(245,158,11,0.1)', padding: '10px 12px', borderRadius: 6, border: '1px solid rgba(245,158,11,0.2)' }}>
+          管理者模式包含敏感数据，请联系管理员提升权限后访问
+        </div>
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ color: '#94a3b8', fontSize: 11, marginBottom: 6 }}>请输入授权秘钥</div>
+          <Input.Password
+            value={secretKey}
+            onChange={e => { setSecretKey(e.target.value); setAuthError(false); }}
+            onPressEnter={handleAuthSubmit}
+            placeholder="请输入秘钥"
+            status={authError ? 'error' : undefined}
+            style={{
+              backgroundColor: '#0F172A',
+              borderColor: authError ? '#ef4444' : '#334155',
+              color: '#e2e8f0',
+            }}
+          />
+          {authError && (
+            <div style={{ color: '#ef4444', fontSize: 11, marginTop: 4 }}>秘钥错误，请重试</div>
+          )}
+        </div>
+        <Button
+          type="primary"
+          block
+          onClick={handleAuthSubmit}
+          style={{ background: '#3b82f6', borderColor: '#3b82f6' }}
+        >
+          验证并进入
+        </Button>
+      </Modal>
 
       <Drawer
         title="系统设置"

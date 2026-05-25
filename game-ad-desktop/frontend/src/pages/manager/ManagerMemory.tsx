@@ -42,7 +42,6 @@ export default function ManagerMemory() {
     return Object.entries(cm).sort((a, b) => b[1] - a[1]).map(([name, value]) => ({ name, value }));
   }, [designers]);
 
-  const allMediaMemory = useMemo(() => Array.from(new Set(designers.flatMap(d => d.mediaBreakdown.map(m => m.media)))), [designers]);
 
   const handleCardClick = (designer: DesignerStats) => {
     setActiveDesigner(designer);
@@ -412,38 +411,30 @@ export default function ManagerMemory() {
         <Col span={12}>
           <Card style={{ background: cardBg, border: `1px solid ${border}` }} styles={{ body: { padding: '12px 12px 8px' } }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 2 }}>
-              <Text strong style={{ color: text, fontSize: 13 }}>设计师花费对比</Text>
-              <Text style={{ color: muted, fontSize: 10, textAlign: 'right', maxWidth: '55%', lineHeight: '14px' }}>各设计师广告投放总花费对比，反映经验积累量</Text>
+              <Text strong style={{ color: text, fontSize: 13 }}>设计师品类经验</Text>
+              <Text style={{ color: muted, fontSize: 10, textAlign: 'right', maxWidth: '55%', lineHeight: '14px' }}>各设计师覆盖的游戏品类数量，反映经验广度</Text>
             </div>
             <ReactECharts option={{
               backgroundColor: 'transparent',
-              tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: (p: any) => `${p[0].name}<br/>花费: $${p[0].value.toFixed(0)}` },
+              tooltip: { trigger: 'axis', formatter: (p: any) => `${p[0].name}<br/>覆盖品类: ${p[0].value}个` },
               grid: { left: 10, right: 20, top: 4, bottom: 8, containLabel: true },
               xAxis: { type: 'category', data: designers.map(d => d.name), axisLabel: { color: muted, fontSize: 10 }, axisLine: { lineStyle: { color: border } } },
-              yAxis: { type: 'value', axisLabel: { color: muted, fontSize: 10, formatter: (v: number) => `$${v}` }, splitLine: { lineStyle: { color: '#1e293b' } } },
-              series: [{ type: 'bar', data: designers.map(d => d.totalSpend), barWidth: 20, itemStyle: { color: blue, borderRadius: [4, 4, 0, 0] } }]
+              yAxis: { type: 'value', axisLabel: { color: muted, fontSize: 10 }, splitLine: { lineStyle: { color: '#1e293b' } } },
+              series: [{ type: 'bar', data: designers.map(d => new Set(d.materials.map(m => m.category).filter(Boolean)).size), barWidth: 20, itemStyle: { color: green, borderRadius: [4, 4, 0, 0] } }]
             }} style={{ height: 220 }} />
           </Card>
         </Col>
         <Col span={12}>
           <Card style={{ background: cardBg, border: `1px solid ${border}` }} styles={{ body: { padding: '12px 12px 8px' } }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 2 }}>
-              <Text strong style={{ color: text, fontSize: 13 }}>效率评分排名</Text>
-              <Text style={{ color: muted, fontSize: 10, textAlign: 'right', maxWidth: '55%', lineHeight: '14px' }}>综合效率评分排名，高分设计师的投放策略值得沉淀推广</Text>
+              <Text strong style={{ color: text, fontSize: 13 }}>渠道专注度</Text>
+              <Text style={{ color: muted, fontSize: 10, textAlign: 'right', maxWidth: '55%', lineHeight: '14px' }}>团队在各渠道的素材投放分布，反映渠道经验集中度</Text>
             </div>
             <ReactECharts option={{
               backgroundColor: 'transparent',
-              tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-              grid: { left: 10, right: 30, top: 4, bottom: 8, containLabel: true },
-              xAxis: { type: 'value', max: 100, axisLabel: { color: muted, fontSize: 10 }, splitLine: { lineStyle: { color: '#1e293b' } } },
-              yAxis: { type: 'category', data: [...designers].sort((a, b) => a.efficiencyScore - b.efficiencyScore).slice(-10).map(d => d.name), axisLabel: { color: text, fontSize: 11 }, axisLine: { lineStyle: { color: border } } },
-              series: [{ type: 'bar', data: [...designers].sort((a, b) => a.efficiencyScore - b.efficiencyScore).slice(-10).map(d => ({ value: d.efficiencyScore, itemStyle: { color: d.efficiencyScore >= 60 ? green : red } })), barWidth: 20, itemStyle: { borderRadius: [0, 4, 4, 0] }, label: { show: true, position: 'right', color: text, fontSize: 10, formatter: (p: any) => p.value + '分' } }]
-            }} style={{ height: 300 }} />
-            <div style={{ marginTop: 4, padding: '4px 8px', background: panelBg, borderRadius: 4 }}>
-              <Text style={{ color: muted, fontSize: 9, lineHeight: '14px' }}>
-                效率 = CTR%×20 + 完播率%×15 + (30−CPM$)，满分100
-              </Text>
-            </div>
+              tooltip: { trigger: 'item', formatter: (p: any) => `${p.name}<br/>素材: ${p.value}条 (${p.percent}%)` },
+              series: [{ type: 'pie', radius: ['35%', '65%'], center: ['50%', '55%'], data: (() => { const map: Record<string,number> = {}; designers.forEach(d => d.mediaBreakdown.forEach(m => { map[m.media] = (map[m.media]||0) + m.count; })); return Object.entries(map).map(([name,value]) => ({name,value})); })(), label: { color: text, fontSize: 10 }, itemStyle: { borderRadius: 4, borderColor: cardBg, borderWidth: 2 }, color: [blue, green, yellow] }]
+            }} style={{ height: 220 }} />
           </Card>
         </Col>
         <Col span={12}>
@@ -468,22 +459,23 @@ export default function ManagerMemory() {
         <Col span={12}>
           <Card style={{ background: cardBg, border: `1px solid ${border}` }} styles={{ body: { padding: '12px 12px 8px' } }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 2 }}>
-              <Text strong style={{ color: text, fontSize: 13 }}>渠道花费对比</Text>
-              <Text style={{ color: muted, fontSize: 10, textAlign: 'right', maxWidth: '55%', lineHeight: '14px' }}>各设计师在不同渠道的投放分布，反映渠道偏好</Text>
+              <Text strong style={{ color: text, fontSize: 13 }}>经验积累榜</Text>
+              <Text style={{ color: muted, fontSize: 10, textAlign: 'right', maxWidth: '55%', lineHeight: '14px' }}>按素材数量和品类覆盖度排名的设计师经验值</Text>
             </div>
-            <ReactECharts option={{
-              backgroundColor: 'transparent',
-              tooltip: { trigger: 'axis' },
-              legend: { data: allMediaMemory, textStyle: { color: muted, fontSize: 10 }, top: 0, right: 10 },
-              grid: { left: 10, right: 20, top: 4, bottom: 8, containLabel: true },
-              xAxis: { type: 'category', data: designers.map(d => d.name), axisLabel: { color: muted, fontSize: 10 }, axisLine: { lineStyle: { color: border } } },
-              yAxis: { type: 'value', axisLabel: { color: muted, fontSize: 10, formatter: (v: number) => `$${v}` }, splitLine: { lineStyle: { color: '#1e293b' } } },
-              series: allMediaMemory.map((media, i) => ({
-                  name: media, type: 'bar',
-                  data: designers.map(d => { const mb = d.mediaBreakdown.find(m => m.media === media); return mb ? mb.spend : 0; }),
-                  itemStyle: { color: [blue, green, yellow, red, purple, '#06b6d4', '#f97316'][i % 7] }
-                }))
-            }} style={{ height: 220 }} />
+            <Table
+              dataSource={designers.map(d => ({ name: d.name, materialCount: d.materialCount, categories: [...new Set(d.materials.map(m => m.category).filter(Boolean))].length, channels: d.mediaBreakdown.length, score: d.materialCount + new Set(d.materials.map(m => m.category).filter(Boolean)).size * 10 + d.mediaBreakdown.length * 5 })).sort((a,b) => b.score - a.score)}
+              rowKey="name"
+              size="small"
+              pagination={false}
+              scroll={{ y: 224 }}
+              columns={[
+                { title: '#', key: 'rank', width: 32, render: (_:any, __:any, i:number) => <Tag color={i===0?'gold':i===1?'default':i===2?'orange':'blue'} style={{fontSize:10,margin:0}}>#{i+1}</Tag> },
+                { title: '设计师', dataIndex: 'name', key: 'name', render: (v:string) => <Text style={{ color: text, fontSize: 11 }}>{v}</Text> },
+                { title: '素材', dataIndex: 'materialCount', key: 'cnt', width: 48, render: (v:number) => <Text style={{ color: blue, fontSize: 11 }}>{v}</Text> },
+                { title: '品类', dataIndex: 'categories', key: 'cats', width: 48, render: (v:number) => <Text style={{ color: green, fontSize: 11 }}>{v}个</Text> },
+                { title: '渠道', dataIndex: 'channels', key: 'chs', width: 48, render: (v:number) => <Text style={{ color: '#8b5cf6', fontSize: 11 }}>{v}个</Text> },
+              ]}
+            />
           </Card>
         </Col>
       </Row>

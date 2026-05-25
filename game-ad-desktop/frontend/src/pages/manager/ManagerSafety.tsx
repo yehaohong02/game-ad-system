@@ -40,18 +40,6 @@ export default function ManagerSafety() {
     lowCtrCount: designers.reduce((s, d) => s + d.lowCtrCount, 0),
   }), [designers, totalSpend]);
 
-  const mediaAnomalyData = useMemo(() => {
-    const allMedia = Array.from(new Set(designers.flatMap(d => d.mediaBreakdown.map(m => m.media))));
-    return allMedia.map(media => {
-      let anomalies = 0, total = 0;
-      for (const d of designers) {
-        const mats = d.materials.filter((m: any) => m.media === media);
-        total += mats.length;
-        anomalies += mats.filter((m: any) => m.ctr > 10 || m.ctr < 0.01 || m.cpc > 50 || (m.spend > 0 && m.impressions < 10)).length;
-      }
-      return { media, total, anomalies, normal: total - anomalies };
-    });
-  }, [designers]);
 
   const handleCardClick = (designer: DesignerStats) => {
     setActiveDesigner(designer);
@@ -470,19 +458,18 @@ export default function ManagerSafety() {
         <Col span={12}>
           <Card style={{ background: cardBg, border: `1px solid ${border}` }} styles={{ body: { padding: '12px 12px 8px' } }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 2 }}>
-              <Text strong style={{ color: text, fontSize: 13 }}>渠道异常分布</Text>
-              <Text style={{ color: muted, fontSize: 10, textAlign: 'right', maxWidth: '55%', lineHeight: '14px' }}>各广告渠道的正常/异常素材比例，识别高风险渠道</Text>
+              <Text strong style={{ color: text, fontSize: 13 }}>高风险素材类型</Text>
+              <Text style={{ color: muted, fontSize: 10, textAlign: 'right', maxWidth: '55%', lineHeight: '14px' }}>各设计师高CPM素材数量，CPM{'>'}$8视为高风险，反映成本失控程度</Text>
             </div>
             <ReactECharts option={{
               backgroundColor: 'transparent',
               tooltip: { trigger: 'axis' },
-              legend: { data: ['正常', '异常'], textStyle: { color: muted, fontSize: 10 }, top: 0, right: 10 },
               grid: { left: 10, right: 20, top: 4, bottom: 8, containLabel: true },
-              xAxis: { type: 'category', data: mediaAnomalyData.map(m => m.media), axisLabel: { color: muted, fontSize: 10 }, axisLine: { lineStyle: { color: border } } },
+              xAxis: { type: 'category', data: designers.map(d => d.name), axisLabel: { color: muted, fontSize: 10 }, axisLine: { lineStyle: { color: border } } },
               yAxis: { type: 'value', axisLabel: { color: muted, fontSize: 10 }, splitLine: { lineStyle: { color: '#1e293b' } } },
               series: [
-                { name: '正常', type: 'bar', stack: 'total', data: mediaAnomalyData.map(m => m.normal), itemStyle: { color: green } },
-                { name: '异常', type: 'bar', stack: 'total', data: mediaAnomalyData.map(m => m.anomalies), barWidth: 24, itemStyle: { color: red, borderRadius: [4, 4, 0, 0] } },
+                { name: '高CPM(>$8)', type: 'bar', data: designers.map(d => d.highCpmCount), barWidth: 16, itemStyle: { color: red }, label: { show: true, position: 'top', color: red, fontSize: 9 } },
+                { name: '低CTR(<0.3%)', type: 'bar', data: designers.map(d => d.lowCtrCount), barWidth: 16, itemStyle: { color: yellow } },
               ]
             }} style={{ height: 220 }} />
           </Card>
