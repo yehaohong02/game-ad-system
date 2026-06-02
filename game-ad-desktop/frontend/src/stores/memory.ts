@@ -236,15 +236,15 @@ export const useMemoryStore = create<MemoryState>((set) => ({
   },
 }));
 
-// Auto-derive from materialData
-useMaterialDataStore.subscribe((state) => {
-  if (state.data.length > 0) {
-    useMemoryStore.setState(deriveMemory(state.data));
+// Sync with materialData — call from page useEffect instead of module scope
+export function initMemorySync() {
+  useMaterialDataStore.subscribe((state) => {
+    if (state.data.length > 0) {
+      useMemoryStore.setState(deriveMemory(state.data));
+    }
+  });
+  const initData = useMaterialDataStore.getState().data;
+  if (initData.length > 0) {
+    useMemoryStore.setState(deriveMemory(initData));
   }
-});
-
-// Initial derive
-const initData = useMaterialDataStore.getState().data;
-if (initData.length > 0) {
-  useMemoryStore.setState(deriveMemory(initData));
 }

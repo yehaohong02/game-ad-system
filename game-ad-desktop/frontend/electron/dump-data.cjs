@@ -13,7 +13,7 @@ app.whenReady().then(() => {
     },
   });
 
-  win.loadURL('http://localhost:5173');
+  win.loadURL('http://localhost:5174');
 
   // Wait for page to load, then extract localStorage
   win.webContents.on('did-finish-load', () => {

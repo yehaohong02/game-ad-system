@@ -449,8 +449,14 @@ export const useCreativeInsightStore = create<CreativeInsightState>((set, get) =
   },
 }));
 
-// 订阅共享数据源，数据变化时自动重新计算
-useMaterialDataStore.subscribe((state) => {
-  const derived = deriveAll(state.data);
-  useCreativeInsightStore.setState(derived);
-});
+// Sync with materialData — call from page useEffect instead of module scope
+export function initCreativeInsightSync() {
+  useMaterialDataStore.subscribe((state) => {
+    const derived = deriveAll(state.data);
+    useCreativeInsightStore.setState(derived);
+  });
+  const initialData = useMaterialDataStore.getState().data;
+  if (initialData.length > 0) {
+    useCreativeInsightStore.setState(deriveAll(initialData));
+  }
+}

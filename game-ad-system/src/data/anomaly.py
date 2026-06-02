@@ -46,7 +46,7 @@ SELECT
     h.cpi_avg_7d,
     abs(t.cpi_today - h.cpi_avg_7d) / greatest(h.cpi_avg_7d, 0.01) * 100 as cpi_deviation
 FROM today t
-INNER JOIN history h ON t.campaign_id = h.campaign_id
+LEFT JOIN history h ON t.campaign_id = h.campaign_id
 WHERE spend_severity != '' OR cpi_severity != '';
 """
 

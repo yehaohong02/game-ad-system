@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Row, Col, Card, Table, Button, Space, Tag, Switch, Typography, Modal, Form, Input, Select, message, Progress, Badge, Tooltip } from 'antd';
 import { PlusOutlined, DeleteOutlined, WarningOutlined, SafetyOutlined, DollarOutlined, ExperimentOutlined } from '@ant-design/icons';
-import { useSafetyStore, type CircuitBreaker, type RiskRule, type OperationPreview } from '../stores/safety';
+import { useSafetyStore, initSafetySync, type CircuitBreaker, type RiskRule, type OperationPreview } from '../stores/safety';
 
 const { Text } = Typography;
 
@@ -103,6 +103,8 @@ const auditColumns = [
 ];
 
 export default function Safety() {
+  useEffect(() => { initSafetySync(); }, []);
+
   const { budget, circuitBreakers, rules, auditLog, operationPreviews, toggleRule, deleteRule, addRule } = useSafetyStore();
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [form] = Form.useForm();

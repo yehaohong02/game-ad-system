@@ -10,6 +10,8 @@ import {
   GlobalOutlined,
   RocketOutlined,
   BarChartOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 
@@ -132,6 +134,10 @@ export default function Sidebar({ collapsed, onCollapse }: SidebarProps) {
         }}
         onClick={() => onCollapse(!collapsed)}
       >
+        {collapsed
+          ? <MenuUnfoldOutlined style={{ fontSize: 18, color: '#94a3b8' }} />
+          : <MenuFoldOutlined style={{ fontSize: 18, color: '#94a3b8' }} />
+        }
       </div>
 
       {/* Navigation Menu */}

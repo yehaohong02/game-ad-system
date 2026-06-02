@@ -52,7 +52,21 @@ def summarize_campaign(campaign_id: str, performance_data: dict) -> CampaignCase
     if content.startswith("```"):
         content = content.split("\n", 1)[1].rsplit("```", 1)[0]
 
-    data = json.loads(content)
+    try:
+        data = json.loads(content)
+    except json.JSONDecodeError:
+        # LLM returned invalid JSON — return a minimal fallback case
+        return CampaignCase(
+            campaign_id=campaign_id,
+            objective="LLM解析失败",
+            budget=0.0,
+            country="",
+            platform="",
+            creative_tags=[],
+            final_result=CampaignResult(roas=0.0, total_installs=0, total_spend=0.0),
+            key_decisions=[],
+            lessons_learned=f"LLM返回了无效JSON: {content[:200]}",
+        )
 
     return CampaignCase(
         campaign_id=campaign_id,

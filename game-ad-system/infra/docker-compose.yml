@@ -19,6 +19,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    # [DEV-ONLY] 以下 volume 挂载用于开发时热重载，生产环境应使用 Dockerfile COPY
     volumes:
       - ../src:/app/src
       - ../api:/app/api
@@ -78,6 +79,7 @@ services:
       AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW_SECRET_KEY:-your-secret-key}
     ports:
       - "${AIRFLOW_PORT:-8080}:8080"
+    # [DEV-ONLY] dags 挂载用于开发时热重载，生产环境应使用 Dockerfile COPY
     volumes:
       - ../dags:/opt/airflow/dags
     entrypoint: /bin/bash

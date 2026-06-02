@@ -39,15 +39,23 @@ export default function TopBar() {
   };
 
   const handleAuthSubmit = () => {
-    if (secretKey === '789') {
-      localStorage.setItem('manager_authorized', '1');
-      setAuthModalOpen(false);
-      useManagerModeStore.getState().setMode('manager');
-      navigate('/manager');
-      message.success('权限验证通过，欢迎进入管理者模式');
-    } else {
-      setAuthError(true);
-    }
+    // Use a simple hash comparison instead of plaintext to avoid bundle inspection
+    const encoder = new TextEncoder();
+    const data = encoder.encode(secretKey);
+    crypto.subtle.digest('SHA-256', data).then((hashBuffer) => {
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      // SHA-256 of '789'
+      if (hashHex === '35a9e381b1a27567549b5f8a6f783c167ebf809f1c4d6a9e367240484d8ce281') {
+        localStorage.setItem('manager_authorized', '1');
+        setAuthModalOpen(false);
+        useManagerModeStore.getState().setMode('manager');
+        navigate('/manager');
+        message.success('权限验证通过，欢迎进入管理者模式');
+      } else {
+        setAuthError(true);
+      }
+    });
   };
 
   return (

@@ -1,5 +1,5 @@
-from fastapi import APIRouter
-from pydantic import BaseModel
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, Field
 
 router = APIRouter()
 
@@ -8,7 +8,7 @@ _runner = None
 
 class AgentRequest(BaseModel):
     query: str
-    context: dict = {}
+    context: dict = Field(default_factory=dict)
 
 
 def _get_runner():
@@ -21,8 +21,11 @@ def _get_runner():
 
 @router.post("/agent/run")
 def run_agent(req: AgentRequest):
-    result = _get_runner().run(req.query, req.context)
-    return {"result": result}
+    try:
+        result = _get_runner().run(req.query, req.context)
+        return {"result": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/rules")

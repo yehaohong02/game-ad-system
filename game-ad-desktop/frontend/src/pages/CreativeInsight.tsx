@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import {
   Button, Space, Tag, Image, Typography,
   Table, Checkbox, Input, Spin, Select, message,
@@ -14,6 +14,7 @@ import {
   CaretRightOutlined, ColumnWidthOutlined,
   MenuUnfoldOutlined,
 } from '@ant-design/icons';
+// @deprecated - This page is dead code (not routed). Use CreativeInsightNew.tsx instead.
 import { useCreativeInsightStore, Creative } from '../stores/creativeInsight';
 
 const { Text } = Typography;
@@ -320,6 +321,12 @@ function AiAssistantPanel() {
     await fetchAiSuggestion(msg);
     scrollToBottom();
   };
+
+  useEffect(() => {
+    return () => {
+      if (previewImage) URL.revokeObjectURL(previewImage);
+    };
+  }, [previewImage]);
 
   const handleFileSelect = useCallback((file: File) => {
     if (!file.type.startsWith('image/')) { message.warning('请上传图片文件'); return; }

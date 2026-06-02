@@ -55,7 +55,10 @@ class AppsFlyerAdapter(BaseAdapter):
 
             if event.get("Event Name") == "install":
                 agg["installs"] += 1
-            agg["revenue"] += float(event.get("Revenue", 0))
+            try:
+                agg["revenue"] += float(event.get("Revenue", 0) or 0)
+            except (ValueError, TypeError):
+                pass  # Skip non-numeric revenue values
 
         records = []
         for (campaign_id, ad_set_id, ad_id), agg in aggregated.items():

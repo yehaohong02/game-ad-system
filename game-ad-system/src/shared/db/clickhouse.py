@@ -6,17 +6,27 @@ from src.shared.config import settings
 _client: Client | None = None
 
 
+def _create_client() -> Client:
+    return clickhouse_connect.get_client(
+        host=settings.clickhouse_host,
+        port=settings.clickhouse_port,
+        username=settings.clickhouse_user,
+        password=settings.clickhouse_password,
+        database=settings.clickhouse_database,
+    )
+
+
 def get_clickhouse_client() -> Client:
     global _client
     if _client is None:
-        _client = clickhouse_connect.get_client(
-            host=settings.clickhouse_host,
-            port=settings.clickhouse_port,
-            username=settings.clickhouse_user,
-            password=settings.clickhouse_password,
-            database=settings.clickhouse_database,
-        )
+        _client = _create_client()
     return _client
+
+
+def reset_client() -> None:
+    """Reset the client so the next call creates a new connection."""
+    global _client
+    _client = None
 
 
 ADS_PERFORMANCE_DDL = """

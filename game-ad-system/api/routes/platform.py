@@ -11,6 +11,11 @@ DATA_ROOT = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file_
 @router.get("/files")
 def list_crawled_files(crawl_dir: str):
     """List all Excel files in the crawl directory (including subdirectories)."""
+    # Security: only allow crawling under 数据 directory
+    real_crawl = os.path.realpath(crawl_dir)
+    data_root = os.path.realpath(DATA_ROOT)
+    if not real_crawl.startswith(data_root + os.sep) and real_crawl != data_root:
+        raise HTTPException(403, "Access denied: can only crawl 数据 directory")
     if not os.path.isdir(crawl_dir):
         raise HTTPException(404, f"Directory not found: {crawl_dir}")
 

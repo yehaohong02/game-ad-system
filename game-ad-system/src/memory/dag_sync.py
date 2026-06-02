@@ -1,3 +1,4 @@
+import logging
 from datetime import date, timedelta
 from src.shared.db.clickhouse import get_clickhouse_client
 from src.memory.store import MemoryStore
@@ -50,7 +51,6 @@ def sync_ended_campaigns(days_back: int = 30, cutoff_days: int = 3) -> int:
             store.save_case(case)
             count += 1
         except Exception as e:
-            import logging
             logging.getLogger(__name__).warning(f"Failed to summarize {campaign_id}: {e}")
 
     return count

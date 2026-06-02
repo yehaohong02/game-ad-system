@@ -10,6 +10,7 @@ class MetaAdsAdapter:
     def __init__(self):
         self.token = settings.meta_access_token
         self.account_id = settings.meta_ad_account_id
+        self._client = httpx.Client(timeout=30)
 
     def fetch(self, target_date: date) -> list[dict]:
         fields = "campaign_id,campaign_name,adset_id,ad_id,impressions,clicks,spend,actions"
@@ -20,9 +21,18 @@ class MetaAdsAdapter:
             "level": "ad",
             "access_token": self.token,
         }
-        resp = httpx.get(url, params=params, timeout=30)
+        resp = self._client.get(url, params=params)
         resp.raise_for_status()
         return self._transform(resp.json().get("data", []), target_date)
+
+    def close(self):
+        self._client.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self.close()
 
     def _transform(self, raw: list[dict], target_date: date) -> list[dict]:
         results = []

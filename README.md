@@ -2,6 +2,8 @@
 
 游戏广告买量自动化系统，基于多Agent协作架构，覆盖数据采集、创意分析、投放执行、安全防护、记忆沉淀全链路。
 
+> **📦 任何人下载本仓库即可完整还原项目**，详见下方「从零还原指南」。
+
 ## 项目结构
 
 ```
@@ -415,6 +417,156 @@ npm config set registry https://registry.npmmirror.com
 
 ### Q: Docker 启动失败？
 确保 Docker Desktop 已安装并运行。Windows 用户需要开启 WSL2。
+
+---
+
+## 从零还原指南
+
+> **目标：** 任何人 clone 本仓库后，按步骤操作即可在本地完整运行项目。
+
+### 前置条件
+
+| 依赖 | 版本 | 下载地址 | 用途 |
+|------|------|---------|------|
+| **Git** | >= 2.30 | [git-scm.com](https://git-scm.com/) | 版本控制 |
+| **Python** | >= 3.11 | [python.org](https://www.python.org/downloads/) | 后端运行 |
+| **Node.js** | >= 18 | [nodejs.org](https://nodejs.org/) | 前端 + Electron |
+| **Docker Desktop** | 最新版 | [docker.com](https://www.docker.com/products/docker-desktop/) | ClickHouse / Redis（桌面应用可选） |
+
+### 第一步：克隆仓库
+
+```bash
+git clone https://github.com/yehaohong02/game-ad-system.git
+cd game-ad-system
+```
+
+### 第二步：还原桌面应用（推荐）
+
+```bash
+# ─── 2.1 安装前端依赖 ───
+cd game-ad-desktop/frontend
+npm install
+
+# ─── 2.2 安装 Electron 依赖 ───
+cd ..
+npm install
+
+# ─── 2.3 构建 Python 后端虚拟环境 ───
+cd backend
+python -m venv .venv
+
+# Windows:
+.venv\Scripts\activate
+# macOS/Linux:
+# source .venv/bin/activate
+
+pip install -e ".[dev]"
+cd ..
+
+# ─── 2.4 启动开发模式 ───
+cd frontend
+npm run electron:dev
+```
+
+> Electron 会自动管理 ClickHouse / Redis / Python 后端的启动和关闭，无需手动操作。
+
+### 第三步：还原独立后端（可选）
+
+```bash
+# ─── 3.1 进入后端目录 ───
+cd game-ad-system
+
+# ─── 3.2 创建虚拟环境 ───
+python -m venv .venv
+
+# Windows:
+.venv\Scripts\activate
+# macOS/Linux:
+# source .venv/bin/activate
+
+# ─── 3.3 安装依赖 ───
+pip install -e ".[dev]"
+
+# ─── 3.4 配置环境变量 ───
+cp .env.example .env
+# 编辑 .env，填入你的 API Key
+
+# ─── 3.5 启动基础设施 + 开发服务器 ───
+make dev
+```
+
+后端启动后访问：
+- **API 文档**：http://localhost:8000/docs
+- **健康检查**：http://localhost:8000/health
+
+### 第四步：配置环境变量
+
+复制 `.env.example` 为 `.env`，按需填入：
+
+```bash
+# 后端
+cp game-ad-system/.env.example game-ad-system/.env
+
+# 桌面后端（如果需要独立运行）
+cp game-ad-desktop/backend/.env.example game-ad-desktop/backend/.env 2>/dev/null || true
+```
+
+**必填项（无 API Key 也可运行，但部分功能不可用）：**
+
+| 变量 | 获取方式 |
+|------|---------|
+| `META_ACCESS_TOKEN` | [Meta Ads Manager](https://business.facebook.com/adsmanager) → 开发者工具 |
+| `APPSFLYER_API_TOKEN` | [AppsFlyer 后台](https://hq1.appsflyer.com/) → API Token |
+| `OPENAI_API_KEY` | [OpenAI Platform](https://platform.openai.com/api-keys) |
+
+### 常见还原问题
+
+#### Q: `npm install` 报错或很慢？
+
+```bash
+# 使用国内镜像
+npm config set registry https://registry.npmmirror.com
+# 然后重新执行
+npm install
+```
+
+#### Q: `pip install` 报错 `No matching distribution`？
+
+确认 Python 版本：
+```bash
+python --version  # 需要 >= 3.11
+```
+
+#### Q: Docker 启动 ClickHouse 失败？
+
+1. 确保 Docker Desktop 已启动（系统托盘有 Docker 图标）
+2. Windows 用户需开启 WSL2：`wsl --install`
+3. 检查端口是否被占用：`netstat -ano | findstr "8123 6379"`
+
+#### Q: Electron 开发模式白屏？
+
+1. 确保 Python 后端已启动（`http://localhost:8000` 可访问）
+2. 或等待 Electron 内置的 ProcessManager 自动拉起（首次启动可能需要 10-20 秒）
+3. 查看控制台日志排查具体错误
+
+#### Q: 想打包为独立 `.exe` 安装程序？
+
+```bash
+cd game-ad-desktop
+npm run package
+# 产物在 release/ 目录下
+```
+
+### 项目目录结构速查
+
+```
+game-ad-system/          ← 独立后端服务（Python + FastAPI + Docker）
+game-ad-desktop/         ← Electron 桌面应用（前端 + 后端 + Electron壳）
+  ├── frontend/          ← React 前端（Vite + antd + ECharts + Zustand）
+  ├── backend/           ← 桌面端 Python 后端（FastAPI）
+  └── electron/          ← Electron 主进程（窗口/服务/爬虫/IPC）
+docs/                    ← 项目文档（含产品对比分析方案）
+```
 
 ---
 

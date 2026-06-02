@@ -4,13 +4,18 @@ import * as XLSX from 'xlsx';
 import { mockOverviewSummary, mockCategoryRecords } from '../data/platformMockData';
 import { useMaterialDataStore, type MaterialRecord } from './materialData';
 
+let _fetchAbortController: AbortController | null = null;
+let _scrapeAbortController: AbortController | null = null;
+let _downloadCompleteUnsub: (() => void) | null = null;
+let _scanProgressUnsub: (() => void) | null = null;
+
 // ---- localStorage persistence helpers ----
 
 const STORAGE_KEY_PREFIX = 'platform_data_';
 const OVERVIEW_STORAGE_KEY = 'platform_data_overview';
 
 function saveToStorage(key: string, data: any) {
-  try { localStorage.setItem(key, JSON.stringify(data)); } catch {}
+  try { localStorage.setItem(key, JSON.stringify(data)); } catch { console.warn('localStorage write failed for', key); }
 }
 function loadFromStorage<T>(key: string): T | null {
   try {
@@ -18,6 +23,7 @@ function loadFromStorage<T>(key: string): T | null {
     return raw ? JSON.parse(raw) as T : null;
   } catch { return null; }
 }
+
 
 // ---- Platform → MaterialData bridge ----
 
@@ -275,6 +281,7 @@ interface PlatformDataState {
   clickDownloadButton: (selector: string) => Promise<void>;
   importDownloadedFile: (record: DownloadRecord) => Promise<void>;
   initDownloadListener: () => void;
+  cleanupListeners: () => void;
   startAutoScan: () => Promise<void>;
 
   // Credentials
@@ -355,11 +362,8 @@ const mockCrossValidation: Record<string, CrossValidation> = {
   reyun: { matched: 0, unmatched: 0, suggestions: [] },
 };
 
-// ---- Data Sources Mock ----
-
-const mockDataSources: DataSource[] = [];
-
-const mockCollectionTasks: CollectionTask[] = [];
+// ---- Data Sources ----
+// Data sources are fetched from backend API; no local mock needed.
 
 // ---- Data Category Definitions ----
 
@@ -528,7 +532,9 @@ function matchFileToCategory(fileDir: string, fileName: string, category: DataCa
   // Check directory filter
   if (category.dir && !fileDir.includes(category.dir)) return false;
   return category.files.some(pattern => {
-    const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$', 'i');
+    // Escape regex special chars except *, then convert * to .*
+    const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp('^' + escaped.replace(/\*/g, '.*') + '$', 'i');
     return regex.test(fileName);
   });
 }
@@ -600,8 +606,14 @@ export const usePlatformDataStore = create<PlatformDataState>((set, get) => ({
 
   fetchDataSources: async () => {
     set({ dataSourceLoading: true });
-    await new Promise((r) => setTimeout(r, 500));
-    set({ dataSources: mockDataSources, collectionTasks: mockCollectionTasks, dataSourceLoading: false });
+    try {
+      const res: any = await platformApi.getDataSources();
+      const sources: DataSource[] = res?.data ?? res ?? [];
+      set({ dataSources: sources, dataSourceLoading: false });
+    } catch {
+      // TODO: Backend API for data sources not yet implemented
+      set({ dataSources: [], dataSourceLoading: false });
+    }
   },
 
   syncDataSource: async (sourceId: string) => {
@@ -610,24 +622,33 @@ export const usePlatformDataStore = create<PlatformDataState>((set, get) => ({
         ds.id === sourceId ? { ...ds, status: 'syncing' as const } : ds
       ),
     }));
-    await new Promise((r) => setTimeout(r, 2000));
-    const newTask: CollectionTask = {
-      id: `task-${Date.now()}`,
-      source: get().dataSources.find((ds) => ds.id === sourceId)?.name ?? sourceId,
-      type: 'manual',
-      status: 'completed',
-      startTime: new Date().toISOString().slice(0, 16).replace('T', ' '),
-      endTime: new Date().toISOString().slice(0, 16).replace('T', ' '),
-      recordCount: Math.floor(Math.random() * 50) + 10,
-    };
-    set((s) => ({
-      dataSources: s.dataSources.map((ds) =>
-        ds.id === sourceId
-          ? { ...ds, status: 'connected' as const, lastSync: newTask.startTime, recordCount: ds.recordCount + (newTask.recordCount ?? 0) }
-          : ds
-      ),
-      collectionTasks: [newTask, ...s.collectionTasks],
-    }));
+    try {
+      // TODO: Backend API for syncing data sources not yet implemented
+      const res: any = await platformApi.syncDataSource(sourceId);
+      const task: CollectionTask = res?.data ?? {
+        id: `task-${Date.now()}`,
+        source: get().dataSources.find((ds) => ds.id === sourceId)?.name ?? sourceId,
+        type: 'manual' as const,
+        status: 'completed' as const,
+        startTime: new Date().toISOString().slice(0, 16).replace('T', ' '),
+        endTime: new Date().toISOString().slice(0, 16).replace('T', ' '),
+        recordCount: 0,
+      };
+      set((s) => ({
+        dataSources: s.dataSources.map((ds) =>
+          ds.id === sourceId
+            ? { ...ds, status: 'connected' as const, lastSync: task.startTime, recordCount: ds.recordCount + (task.recordCount ?? 0) }
+            : ds
+        ),
+        collectionTasks: [task, ...s.collectionTasks],
+      }));
+    } catch {
+      set((s) => ({
+        dataSources: s.dataSources.map((ds) =>
+          ds.id === sourceId ? { ...ds, status: 'error' as const } : ds
+        ),
+      }));
+    }
   },
 
   addManualCreatives: async (creatives: Partial<Creative>[]) => {
@@ -667,26 +688,46 @@ export const usePlatformDataStore = create<PlatformDataState>((set, get) => ({
       startTime: new Date().toISOString().slice(0, 16).replace('T', ' '),
     };
     set((s) => ({ collectionTasks: [newTask, ...s.collectionTasks] }));
-    await new Promise((r) => setTimeout(r, 3000));
-    const success = source.status !== 'error';
-    set((s) => ({
-      collectionTasks: s.collectionTasks.map((t) =>
-        t.id === newTask.id
-          ? {
-              ...t,
-              status: (success ? 'completed' : 'failed') as 'completed' | 'failed',
-              endTime: new Date().toISOString().slice(0, 16).replace('T', ' '),
-              recordCount: success ? Math.floor(Math.random() * 100) + 20 : undefined,
-              error: success ? undefined : '数据源连接失败，请检查配置',
-            }
-          : t
-      ),
-      dataSources: s.dataSources.map((ds) =>
-        ds.id === sourceId
-          ? { ...ds, lastSync: new Date().toISOString().slice(0, 16).replace('T', ' '), status: (success ? 'connected' : 'error') as 'connected' | 'error' }
-          : ds
-      ),
-    }));
+    try {
+      // TODO: Backend API for running collection tasks not yet implemented
+      const res: any = await platformApi.runCollectionTask(sourceId);
+      const result = res?.data ?? {};
+      set((s) => ({
+        collectionTasks: s.collectionTasks.map((t) =>
+          t.id === newTask.id
+            ? {
+                ...t,
+                status: 'completed' as const,
+                endTime: new Date().toISOString().slice(0, 16).replace('T', ' '),
+                recordCount: result.recordCount ?? 0,
+              }
+            : t
+        ),
+        dataSources: s.dataSources.map((ds) =>
+          ds.id === sourceId
+            ? { ...ds, lastSync: new Date().toISOString().slice(0, 16).replace('T', ' '), status: 'connected' as const }
+            : ds
+        ),
+      }));
+    } catch {
+      set((s) => ({
+        collectionTasks: s.collectionTasks.map((t) =>
+          t.id === newTask.id
+            ? {
+                ...t,
+                status: 'failed' as const,
+                endTime: new Date().toISOString().slice(0, 16).replace('T', ' '),
+                error: '数据源连接失败，请检查配置',
+              }
+            : t
+        ),
+        dataSources: s.dataSources.map((ds) =>
+          ds.id === sourceId
+            ? { ...ds, status: 'error' as const }
+            : ds
+        ),
+      }));
+    }
   },
 
   // --- Smart download actions ---
@@ -701,11 +742,13 @@ export const usePlatformDataStore = create<PlatformDataState>((set, get) => ({
 
     set({ scanning: true, scannedPages: [], scanProgress: null });
 
-    // Register progress listener
+    // Register progress listener (cleanup previous)
+    _scanProgressUnsub?.();
     if (electron.onScanProgress) {
-      electron.onScanProgress((data: { page: number; maxPages: number; url: string; found: number }) => {
+      const unsub = electron.onScanProgress((data: { page: number; maxPages: number; url: string; found: number }) => {
         set({ scanProgress: data });
       });
+      _scanProgressUnsub = typeof unsub === 'function' ? unsub : null;
     }
 
     try {
@@ -815,8 +858,11 @@ export const usePlatformDataStore = create<PlatformDataState>((set, get) => ({
         try {
           let buffer: ArrayBuffer;
           if (electron?.readLocalFile) {
-            const bytes: number[] = await electron.readLocalFile(file.path);
-            buffer = new Uint8Array(bytes).buffer;
+            const base64: string = await electron.readLocalFile(file.path);
+            const binary = atob(base64);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+            buffer = bytes.buffer;
           } else {
             buffer = await platformApi.readLocalFile(file.path) as unknown as ArrayBuffer;
           }
@@ -903,8 +949,11 @@ export const usePlatformDataStore = create<PlatformDataState>((set, get) => ({
           try {
             let buffer: ArrayBuffer;
             if (electron?.readLocalFile) {
-              const bytes: number[] = await electron.readLocalFile(file.path);
-              buffer = new Uint8Array(bytes).buffer;
+              const base64: string = await electron.readLocalFile(file.path);
+              const binary = atob(base64);
+              const bytes = new Uint8Array(binary.length);
+              for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+              buffer = bytes.buffer;
             } else {
               buffer = await platformApi.readLocalFile(file.path) as unknown as ArrayBuffer;
             }
@@ -1399,9 +1448,12 @@ export const usePlatformDataStore = create<PlatformDataState>((set, get) => ({
       let fileBuffer: ArrayBuffer;
 
       if (electron?.readLocalFile && record.filePath && !record.filePath.startsWith('/mock')) {
-        // In Electron, read file via IPC (fs.readFileSync in main process)
-        const bytes: number[] = await electron.readLocalFile(record.filePath);
-        fileBuffer = new Uint8Array(bytes).buffer;
+        // In Electron, read file via IPC (fs.promises.readFile in main process)
+        const base64: string = await electron.readLocalFile(record.filePath);
+        const binary = atob(base64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        fileBuffer = bytes.buffer;
       } else {
         // Mock data - generate sample Excel-like data
         const ws = XLSX.utils.aoa_to_sheet([
@@ -1488,11 +1540,21 @@ export const usePlatformDataStore = create<PlatformDataState>((set, get) => ({
   initDownloadListener: () => {
     const electron = (window as any).electronAPI?.platformData;
     if (!electron?.onDownloadComplete) return;
-    electron.onDownloadComplete((record: DownloadRecord) => {
-      // 下载完成，保存到列表，等用户确认后再导入
+    // Clean up previous listener
+    _downloadCompleteUnsub?.();
+    const callback = (record: DownloadRecord) => {
       const withStatus = { ...record, status: 'pending' as const };
       set((s) => ({ downloadRecords: [withStatus, ...s.downloadRecords] }));
-    });
+    };
+    const unsub = electron.onDownloadComplete(callback);
+    _downloadCompleteUnsub = typeof unsub === 'function' ? unsub : null;
+  },
+
+  cleanupListeners: () => {
+    _downloadCompleteUnsub?.();
+    _downloadCompleteUnsub = null;
+    _scanProgressUnsub?.();
+    _scanProgressUnsub = null;
   },
 
   // --- Platform selection ---
@@ -1533,47 +1595,57 @@ export const usePlatformDataStore = create<PlatformDataState>((set, get) => ({
   // --- Fetch creatives (API with mock fallback) ---
 
   fetchCreatives: async () => {
+    _fetchAbortController?.abort();
+    _fetchAbortController = new AbortController();
+    const signal = _fetchAbortController.signal;
     set({ loading: true });
     try {
       const platform = get().platform;
-      const res: any = await platformApi.getCreatives(platform);
+      const res: any = await platformApi.getCreatives(platform, { signal });
       const data: Creative[] = res?.data ?? res ?? [];
       if (data.length > 0) {
         set({ creatives: data });
       } else {
         // fallback to mock
         await new Promise((r) => setTimeout(r, 300));
+        if (!signal.aborted) set({ creatives: mockCreatives[platform] ?? [] });
+      }
+    } catch (e: any) {
+      if (e.name !== 'AbortError') {
+        const platform = get().platform;
+        await new Promise((r) => setTimeout(r, 300));
         set({ creatives: mockCreatives[platform] ?? [] });
       }
-    } catch {
-      const platform = get().platform;
-      await new Promise((r) => setTimeout(r, 300));
-      set({ creatives: mockCreatives[platform] ?? [] });
     } finally {
-      set({ loading: false });
+      if (!signal.aborted) set({ loading: false });
     }
   },
 
   // --- Fetch rankings (API with mock fallback) ---
 
   fetchRankings: async () => {
+    _fetchAbortController?.abort();
+    _fetchAbortController = new AbortController();
+    const signal = _fetchAbortController.signal;
     set({ loading: true });
     try {
       const platform = get().platform;
-      const res: any = await platformApi.getRankings(platform);
+      const res: any = await platformApi.getRankings(platform, { signal });
       const data: Ranking[] = res?.data ?? res ?? [];
       if (data.length > 0) {
         set({ rankings: data });
       } else {
         await new Promise((r) => setTimeout(r, 300));
+        if (!signal.aborted) set({ rankings: mockRankings[platform] ?? [] });
+      }
+    } catch (e: any) {
+      if (e.name !== 'AbortError') {
+        const platform = get().platform;
+        await new Promise((r) => setTimeout(r, 300));
         set({ rankings: mockRankings[platform] ?? [] });
       }
-    } catch {
-      const platform = get().platform;
-      await new Promise((r) => setTimeout(r, 300));
-      set({ rankings: mockRankings[platform] ?? [] });
     } finally {
-      set({ loading: false });
+      if (!signal.aborted) set({ loading: false });
     }
   },
 
@@ -1760,6 +1832,10 @@ export const usePlatformDataStore = create<PlatformDataState>((set, get) => ({
 
   // Trigger immediate scrape with multi-strategy fallback
   scrapePlatform: async (platformId?: string) => {
+    _scrapeAbortController?.abort();
+    _scrapeAbortController = new AbortController();
+    const signal = _scrapeAbortController.signal;
+
     const targetId = platformId ?? get().platform;
     const config = get().platforms.find((p) => p.id === targetId);
     const url = config?.url || '';
@@ -1797,7 +1873,7 @@ export const usePlatformDataStore = create<PlatformDataState>((set, get) => ({
           }
 
           case 'backend-proxy': {
-            const res: any = await platformApi.scrapeProxy({ platform_id: targetId, url });
+            const res: any = await platformApi.scrapeProxy({ platform_id: targetId, url }, { signal });
             const data = res?.data ?? res;
             if (!data?.creatives?.length && !data?.rankings?.length) throw new Error('后端代理未返回数据');
             result = {
@@ -1819,7 +1895,7 @@ export const usePlatformDataStore = create<PlatformDataState>((set, get) => ({
           }
 
           case 'direct-fetch': {
-            const res: any = await platformApi.directFetch({ url, platform_id: targetId });
+            const res: any = await platformApi.directFetch({ url, platform_id: targetId }, { signal });
             const data = res?.data ?? res;
             if (!data?.creatives?.length && !data?.rankings?.length) throw new Error('直接抓取未返回数据');
             result = {

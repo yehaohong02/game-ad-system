@@ -64,10 +64,20 @@ export default function PlatformData() {
   useEffect(() => {
     initDownloadListener();
     fetchBookmarks();
-    // Default crawl directory
-    const defaultDir = 'D:\\CC\\数据\\crawl_1779164418450';
-    setCrawlDir(defaultDir);
-    loadOverviewSummary(defaultDir).catch(() => {});
+    // Load default crawl directory from electron userData
+    const electron = (window as any).electronAPI?.platformData;
+    if (electron?.listCrawledFiles) {
+      // Use the first available crawl directory or prompt user
+      const userDataPath = (window as any).electronAPI?.getUserDataPath?.() || '';
+      if (userDataPath) {
+        const defaultDir = `${userDataPath}\\crawled`;
+        setCrawlDir(defaultDir);
+        loadOverviewSummary(defaultDir).catch(() => {});
+      }
+    }
+    return () => {
+      usePlatformDataStore.getState().cleanupListeners();
+    };
   }, []);
 
   const handleOpenSite = async (url?: string) => {
@@ -85,7 +95,8 @@ export default function PlatformData() {
         setSiteOpened(true);
         setSiteName(targetUrl);
         message.success('网站已打开，请在弹出窗口中登录');
-        const siteKey = new URL(targetUrl).hostname;
+        let siteKey: string;
+        try { siteKey = new URL(targetUrl).hostname; } catch { message.error('无效的网站地址'); setOpening(false); return; }
         await checkSavedCredentials(siteKey);
       } catch (err: any) {
         message.error('打开失败: ' + err.message);
@@ -106,7 +117,8 @@ export default function PlatformData() {
 
   const handleSaveCredentials = async () => {
     if (!credUsername || !credPassword) { message.warning('请输入账号和密码'); return; }
-    const siteKey = new URL(siteUrl).hostname;
+    let siteKey: string;
+    try { siteKey = new URL(siteUrl).hostname; } catch { message.error('无效的网站地址'); return; }
     await saveCredentials(siteKey, credUsername, credPassword);
     setCredModalOpen(false); setCredUsername(''); setCredPassword('');
     message.success('账号密码已保存');
@@ -668,57 +680,53 @@ export default function PlatformData() {
                 <Col span={12}>
                   <Card style={cardStyle} bodyStyle={{ padding: 10 }}
                     title={<span style={{ color: '#E2E8F0', fontSize: 12 }}>📱 短剧热榜投放APP</span>}>
-                    <Row gutter={[8, 4]}>
-                      {[
-                        { app: 'My Drama / MyDrama', count: 5, hot: 'Mr Denver 4845万', color: '#EC4899' },
-                        { app: 'Kuku TV', count: 5, hot: 'ROCKETWALA 2318万', color: '#F472B6' },
-                        { app: 'DramaShorts / Dramashorts', count: 5, hot: 'Billionaire 8831万', color: '#E879F9' },
-                        { app: 'NetShort', count: 4, hot: 'Wolfless 547万', color: '#A855F7' },
-                        { app: 'DramaBox', count: 3, hot: "Lady Boss 3082万", color: '#8B5CF6' },
-                        { app: 'DramaWave', count: 2, hot: "Dragon King 211万", color: '#6366F1' },
-                        { app: 'ReelShort', count: 1, hot: 'Saia da frente 323万', color: '#4F46E5' },
-                        { app: 'MokaTV', count: 1, hot: 'Mafia Boss 6332万', color: '#7C3AED' },
-                      ].map((a, i) => (
-                        <Col key={i} span={24}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '2px 0' }}>
-                            <Text style={{ color: '#E2E8F0', fontSize: 11, width: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.app}</Text>
-                            <Tag color={i < 3 ? 'magenta' : 'default'} style={{ fontSize: 9, margin: 0 }}>{a.count}部</Tag>
-                            <Progress percent={Math.round(a.count / 5 * 100)} showInfo={false} strokeColor={a.color} trailColor="#1E293B" size="small" style={{ width: 50, margin: 0 }} />
-                            <Text style={{ color: '#94A3B8', fontSize: 9, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>热值: {a.hot}</Text>
-                          </div>
-                        </Col>
-                      ))}
-                    </Row>
+                    {overviewSummary.dramaTopProducts.length > 0 ? (
+                      <Row gutter={[8, 4]}>
+                        {overviewSummary.dramaTopProducts.slice(0, 8).map((p, i) => {
+                          const maxCount = overviewSummary.dramaTopProducts[0]?.dramaCount || 1;
+                          const colors = ['#EC4899', '#F472B6', '#E879F9', '#A855F7', '#8B5CF6', '#6366F1', '#4F46E5', '#7C3AED'];
+                          return (
+                            <Col key={i} span={24}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '2px 0' }}>
+                                <Text style={{ color: '#E2E8F0', fontSize: 11, width: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.product}</Text>
+                                <Tag color={i < 3 ? 'magenta' : 'default'} style={{ fontSize: 9, margin: 0 }}>{p.dramaCount}部</Tag>
+                                <Progress percent={Math.round(p.dramaCount / maxCount * 100)} showInfo={false} strokeColor={colors[i % colors.length]} trailColor="#1E293B" size="small" style={{ width: 50, margin: 0 }} />
+                              </div>
+                            </Col>
+                          );
+                        })}
+                      </Row>
+                    ) : (
+                      <Text style={{ color: '#475569', fontSize: 11 }}>暂无数据</Text>
+                    )}
                   </Card>
                 </Col>
                 <Col span={12}>
                   <Card style={cardStyle} bodyStyle={{ padding: 10 }}
                     title={<span style={{ color: '#E2E8F0', fontSize: 12 }}>🥇 黄金3秒台词洞察</span>}>
-                    <div style={{ marginBottom: 8, padding: '6px 8px', background: '#0F172A', borderRadius: 6, border: '1px solid #1E293B' }}>
-                      <Text style={{ color: '#F59E0B', fontSize: 11, fontWeight: 600 }}>核心发现</Text>
-                      <Text style={{ color: '#CBD5E1', fontSize: 10, display: 'block', marginTop: 2 }}>
-                        葡萄牙语台词占据TOP6，巴西市场短剧投放竞争白热化。"plateia"(观众)和"o que"(什么)为最高频hook词。
-                      </Text>
-                    </div>
-                    <Row gutter={[8, 4]}>
-                      {[
-                        { line: 'plateia, sim.', materials: 1184, lang: '葡语', insight: '最高频，单一产品' },
-                        { line: 'o que, é isso.', materials: 437, lang: '葡语', insight: '疑问hook' },
-                        { line: 'o que, é, que é.', materials: 343, lang: '葡语', insight: '重复强调' },
-                        { line: 'plateia, oh.', materials: 278, lang: '葡语', insight: '感叹hook' },
-                        { line: 'You have an extremely sharp brain...', materials: 242, lang: '英语', insight: '益智互动' },
-                        { line: 'Can you tell me? No...', materials: 198, lang: '英语', insight: '对话挑战' },
-                      ].map((g, i) => (
-                        <Col key={i} span={24}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '2px 0' }}>
-                            <Tag color={i < 4 ? 'gold' : 'default'} style={{ fontSize: 9, margin: 0, maxWidth: 24, textAlign: 'center' }}>{i + 1}</Tag>
-                            <Text style={{ color: '#E2E8F0', fontSize: 10, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.line}</Text>
-                            <Tag color="orange" style={{ fontSize: 8, margin: 0 }}>{g.lang}</Tag>
-                            <Text style={{ color: '#F59E0B', fontSize: 10, minWidth: 32, textAlign: 'right' }}>{g.materials}</Text>
-                          </div>
-                        </Col>
-                      ))}
-                    </Row>
+                    {overviewSummary.dramaKeywords.length > 0 ? (
+                      <>
+                        <div style={{ marginBottom: 8, padding: '6px 8px', background: '#0F172A', borderRadius: 6, border: '1px solid #1E293B' }}>
+                          <Text style={{ color: '#F59E0B', fontSize: 11, fontWeight: 600 }}>核心发现</Text>
+                          <Text style={{ color: '#CBD5E1', fontSize: 10, display: 'block', marginTop: 2 }}>
+                            高频台词关键词共 {overviewSummary.dramaKeywords.length} 个，TOP3为「{overviewSummary.dramaKeywords.slice(0, 3).map(k => k.word).join('」「')}」
+                          </Text>
+                        </div>
+                        <Row gutter={[8, 4]}>
+                          {overviewSummary.dramaKeywords.slice(0, 6).map((k, i) => (
+                            <Col key={i} span={24}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '2px 0' }}>
+                                <Tag color={i < 3 ? 'gold' : 'default'} style={{ fontSize: 9, margin: 0, maxWidth: 24, textAlign: 'center' }}>{i + 1}</Tag>
+                                <Text style={{ color: '#E2E8F0', fontSize: 10, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{k.word}</Text>
+                                <Text style={{ color: '#F59E0B', fontSize: 10, minWidth: 32, textAlign: 'right' }}>{k.count}</Text>
+                              </div>
+                            </Col>
+                          ))}
+                        </Row>
+                      </>
+                    ) : (
+                      <Text style={{ color: '#475569', fontSize: 11 }}>暂无数据</Text>
+                    )}
                   </Card>
                 </Col>
               </Row>
@@ -779,56 +787,52 @@ export default function PlatformData() {
                 </Col>
               </Row>
 
-              {/* Row 8: Overseas HQ Distribution + Domestic New Media */}
+              {/* Row 8: Overseas HQ Distribution + Outbound Company Matrix */}
               <Row gutter={6}>
                 <Col span={12}>
                   <Card style={cardStyle} bodyStyle={{ padding: 10 }}
                     title={<span style={{ color: '#E2E8F0', fontSize: 12 }}>🌏 海外买量公司总部分布</span>}>
-                    <Row gutter={[8, 4]}>
-                      {[
-                        { region: '新加坡', count: 6, company: 'Oakever Games', color: '#10B981' },
-                        { region: '土耳其', count: 2, company: 'Dream / Good Job', color: '#F59E0B' },
-                        { region: '中国香港', count: 2, company: 'Vita Studio 等', color: '#3B82F6' },
-                        { region: '中国内地', count: 1, company: 'Orange Game', color: '#EF4444' },
-                        { region: '其他/未知', count: 9, company: '-', color: '#64748B' },
-                      ].map((h, i) => (
-                        <Col key={i} span={24}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '2px 0' }}>
-                            <div style={{ width: 6, height: 6, borderRadius: '50%', background: h.color, flexShrink: 0 }} />
-                            <Text style={{ color: '#E2E8F0', fontSize: 11, width: 56 }}>{h.region}</Text>
-                            <Progress percent={Math.round(h.count / 20 * 100)} showInfo={false} strokeColor={h.color} trailColor="#1E293B" size="small" style={{ flex: 1, margin: 0 }} />
-                            <Text style={{ color: h.color, fontSize: 10, minWidth: 36, textAlign: 'right' }}>{h.count}款</Text>
-                            <Text style={{ color: '#64748B', fontSize: 9, width: 80, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.company}</Text>
-                          </div>
-                        </Col>
-                      ))}
-                    </Row>
+                    {overviewSummary.crossRegionCompanies.length > 0 ? (
+                      <Row gutter={[8, 4]}>
+                        {overviewSummary.crossRegionCompanies.slice(0, 8).map((c, i) => {
+                          const colors = ['#10B981', '#F59E0B', '#3B82F6', '#EF4444', '#A855F7', '#EC4899', '#6366F1', '#64748B'];
+                          return (
+                            <Col key={i} span={24}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '2px 0' }}>
+                                <div style={{ width: 6, height: 6, borderRadius: '50%', background: colors[i % colors.length], flexShrink: 0 }} />
+                                <Text style={{ color: '#E2E8F0', fontSize: 11, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</Text>
+                                <Space size={2}>
+                                  {c.regions.map(r => <Tag key={r} color={r === '国内' ? 'blue' : 'magenta'} style={{ fontSize: 9, margin: 0, padding: '0 3px' }}>{r}</Tag>)}
+                                </Space>
+                                <Text style={{ color: colors[i % colors.length], fontSize: 10, minWidth: 36, textAlign: 'right' }}>{c.gameCount}款</Text>
+                              </div>
+                            </Col>
+                          );
+                        })}
+                      </Row>
+                    ) : (
+                      <Text style={{ color: '#475569', fontSize: 11 }}>暂无数据</Text>
+                    )}
                   </Card>
                 </Col>
                 <Col span={12}>
                   <Card style={cardStyle} bodyStyle={{ padding: 10 }}
                     title={<span style={{ color: '#E2E8F0', fontSize: 12 }}>📦 出海公司投放矩阵</span>}>
-                    <Row gutter={[8, 4]}>
-                      {[
-                        { company: 'Orange Game', games: 4, markets: '沙特/西班牙/美国/墨西哥', topMedia: 'FacebookAudience' },
-                        { company: 'Century Games', games: 3, markets: '美国/日本/韩国/沙特', topMedia: 'AppLovin' },
-                        { company: 'Level Infinite', games: 2, markets: '印尼/菲律宾/美国', topMedia: 'Instagram' },
-                        { company: 'Microfun Limited', games: 2, markets: '美国/日本/法国', topMedia: 'AppLovin' },
-                        { company: 'LTGAMES GLOBAL', games: 2, markets: '美国/德国/法国', topMedia: 'Instagram' },
-                        { company: 'IGG.COM', games: 1, markets: '美国/新加坡/日本', topMedia: 'Facebook' },
-                        { company: 'Hungry Studio', games: 1, markets: '美国/印尼/菲律宾', topMedia: 'AppLovin' },
-                        { company: 'Phantix Games', games: 1, markets: '美国/新加坡', topMedia: 'Instagram' },
-                      ].map((c, i) => (
-                        <Col key={i} span={24}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '2px 0', borderBottom: i < 7 ? '1px solid #1E293B' : 'none' }}>
-                            <Text style={{ color: '#E2E8F0', fontSize: 11, width: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.company}</Text>
-                            <Tag color="blue" style={{ fontSize: 9, margin: 0 }}>{c.games}款</Tag>
-                            <Text style={{ color: '#94A3B8', fontSize: 9, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.markets}</Text>
-                            <Tag color="default" style={{ fontSize: 9, margin: 0 }}>{c.topMedia}</Tag>
-                          </div>
-                        </Col>
-                      ))}
-                    </Row>
+                    {overviewSummary.topOutboundCompanies.length > 0 ? (
+                      <Row gutter={[8, 4]}>
+                        {overviewSummary.topOutboundCompanies.slice(0, 8).map((c, i) => (
+                          <Col key={i} span={24}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '2px 0', borderBottom: i < 7 ? '1px solid #1E293B' : 'none' }}>
+                              <Text style={{ color: '#E2E8F0', fontSize: 11, width: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</Text>
+                              <Tag color="blue" style={{ fontSize: 9, margin: 0 }}>{c.overseasGames}款</Tag>
+                              <Tag color="cyan" style={{ fontSize: 9, margin: 0 }}>{c.topMarket}</Tag>
+                            </div>
+                          </Col>
+                        ))}
+                      </Row>
+                    ) : (
+                      <Text style={{ color: '#475569', fontSize: 11 }}>暂无数据</Text>
+                    )}
                   </Card>
                 </Col>
               </Row>

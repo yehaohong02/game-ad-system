@@ -1,15 +1,19 @@
 import uuid
 import base64
 from datetime import datetime
-from fastapi import APIRouter, Query, UploadFile, File
+from fastapi import APIRouter, Query, UploadFile, File, HTTPException
 
 router = APIRouter()
+
+MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
 
 
 @router.post("/upload")
 async def upload_creative(file: UploadFile = File(...)):
     """上传素材图片，AI自动识别标签并返回素材信息"""
     contents = await file.read()
+    if len(contents) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=413, detail="File too large (max 50MB)")
 
     # 调用CLIP视觉标签器
     from src.creative.tagger.visual_tagger import tag_visual
@@ -44,15 +48,21 @@ async def upload_creative(file: UploadFile = File(...)):
 
 
 @router.get("/rankings")
-def get_rankings(days: int = Query(7)):
+def get_rankings(days: int = Query(7, ge=1, le=365)):
     from src.creative.analyzer.performance_fetcher import fetch_creative_performance
-    return {"data": fetch_creative_performance(days)}
+    try:
+        return {"data": fetch_creative_performance(days)}
+    except Exception:
+        return {"data": []}
 
 
 @router.get("/elements")
-def get_elements(days: int = Query(7)):
+def get_elements(days: int = Query(7, ge=1, le=365)):
     from src.creative.analyzer.element_ranker import rank_elements
-    return {"data": rank_elements(days)}
+    try:
+        return {"data": rank_elements(days)}
+    except Exception:
+        return {"data": []}
 
 
 @router.post("/recommend")

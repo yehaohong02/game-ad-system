@@ -1,10 +1,20 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from src.ai.commander import Commander, EXPERTS
 
 router = APIRouter()
 
-_commander = Commander()
+_commander = None
+
+
+def _get_commander():
+    global _commander
+    if _commander is None:
+        try:
+            _commander = Commander()
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Commander init failed: {e}")
+    return _commander
 
 
 class ChatRequest(BaseModel):
@@ -20,15 +30,25 @@ class AlertRequest(BaseModel):
 
 @router.post("/chat")
 def ai_chat(req: ChatRequest):
-    data = {**req.data, "user_message": req.message}
-    result = _commander.dispatch(req.module, data, "analyze")
-    return {"response": result}
+    try:
+        data = {**req.data, "user_message": req.message}
+        result = _get_commander().dispatch(req.module, data, "analyze")
+        return {"response": result}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/alert-check")
 def alert_check(req: AlertRequest):
-    result = _commander.dispatch(req.module, req.data, "alert")
-    return {"alert": result}
+    try:
+        result = _get_commander().dispatch(req.module, req.data, "alert")
+        return {"alert": result}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/experts")

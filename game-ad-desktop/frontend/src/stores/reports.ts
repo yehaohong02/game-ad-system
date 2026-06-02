@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import dayjs from 'dayjs';
 import { reportsApi } from '../services/api';
 import { useMaterialDataStore, type MaterialRecord } from './materialData';
 
@@ -166,7 +167,7 @@ function deriveReports(data: MaterialRecord[]): Pick<ReportsState, 'dailyReport'
   }
 
   const dailyReport: DailyReport = {
-    date: '2026-05-20',
+    date: dayjs().format('YYYY-MM-DD'),
     metrics: {
       total_spend: Math.round(totalSpend),
       total_installs: 0,
@@ -183,7 +184,7 @@ function deriveReports(data: MaterialRecord[]): Pick<ReportsState, 'dailyReport'
   };
 
   const weeklyReport: WeeklyReport = {
-    period: '2026-05-14 ~ 2026-05-20',
+    period: `${dayjs().subtract(6, 'day').format('YYYY-MM-DD')} ~ ${dayjs().format('YYYY-MM-DD')}`,
     type: 'weekly',
     metrics: {
       total_spend: Math.round(totalSpend),
@@ -213,14 +214,17 @@ export const useReportsStore = create<ReportsState>((set) => ({
       const res: any = await reportsApi.getDaily(date);
       const data: DailyReport = res?.data ?? res;
       if (data && data.metrics && typeof data.metrics.total_spend === 'number') {
-        set({ dailyReport: data });
+        set({ dailyReport: data, loading: false });
       } else {
-        // derived from materialData already
+        // Fall back to data derived from materialData store
+        const matData = useMaterialDataStore.getState().data;
+        if (matData.length > 0) set(deriveReports(matData));
         set({ loading: false });
       }
     } catch {
-      set({ loading: false });
-    } finally {
+      // API unavailable — derive from local materialData
+      const matData = useMaterialDataStore.getState().data;
+      if (matData.length > 0) set(deriveReports(matData));
       set({ loading: false });
     }
   },
@@ -231,27 +235,29 @@ export const useReportsStore = create<ReportsState>((set) => ({
       const res: any = await reportsApi.getWeekly();
       const data: WeeklyReport = res?.data ?? res;
       if (data && data.metrics && typeof data.metrics.total_spend === 'number') {
-        set({ weeklyReport: data });
+        set({ weeklyReport: data, loading: false });
       } else {
+        const matData = useMaterialDataStore.getState().data;
+        if (matData.length > 0) set(deriveReports(matData));
         set({ loading: false });
       }
     } catch {
-      set({ loading: false });
-    } finally {
+      const matData = useMaterialDataStore.getState().data;
+      if (matData.length > 0) set(deriveReports(matData));
       set({ loading: false });
     }
   },
 }));
 
-// Auto-derive from materialData
-useMaterialDataStore.subscribe((state) => {
-  if (state.data.length > 0) {
-    useReportsStore.setState(deriveReports(state.data));
+// Sync with materialData — call from page useEffect instead of module scope
+export function initReportsSync() {
+  useMaterialDataStore.subscribe((state) => {
+    if (state.data.length > 0) {
+      useReportsStore.setState(deriveReports(state.data));
+    }
+  });
+  const initData = useMaterialDataStore.getState().data;
+  if (initData.length > 0) {
+    useReportsStore.setState(deriveReports(initData));
   }
-});
-
-// Initial derive
-const initData = useMaterialDataStore.getState().data;
-if (initData.length > 0) {
-  useReportsStore.setState(deriveReports(initData));
 }

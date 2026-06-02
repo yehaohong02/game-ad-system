@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, HTTPException, Query
 from datetime import date
 from pydantic import BaseModel
 
@@ -35,13 +35,16 @@ def get_performance(
     Returns:
         包含 impressions, clicks, installs, spend, revenue, roi 等指标的数据列表
     """
-    from src.shared.db.clickhouse import get_clickhouse_client
-    client = get_clickhouse_client()
-    result = client.query(
-        "SELECT * FROM ads_performance WHERE campaign_id = %(cid)s AND date >= %(dfrom)s AND date <= %(dto)s",
-        parameters={"cid": campaign_id, "dfrom": date_from, "dto": date_to},
-    )
-    return {"data": [dict(zip(result.column_names, row)) for row in result.result_rows]}
+    try:
+        from src.shared.db.clickhouse import get_clickhouse_client
+        client = get_clickhouse_client()
+        result = client.query(
+            "SELECT * FROM ads_performance WHERE campaign_id = %(cid)s AND date >= %(dfrom)s AND date <= %(dto)s",
+            parameters={"cid": campaign_id, "dfrom": date_from, "dto": date_to},
+        )
+        return {"data": [dict(zip(result.column_names, row)) for row in result.result_rows]}
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=f"数据查询失败: {str(e)}")
 
 
 @router.get("/alerts", summary="获取告警列表", response_model=AlertResponse)
@@ -56,12 +59,15 @@ def get_alerts(
     Returns:
         包含告警类型、严重程度、触发值等信息的告警列表
     """
-    from src.shared.db.clickhouse import get_clickhouse_client
-    client = get_clickhouse_client()
-    query = "SELECT * FROM alerts ORDER BY created_at DESC LIMIT 100"
-    if campaign_id:
-        query = f"SELECT * FROM alerts WHERE campaign_id = %(cid)s ORDER BY created_at DESC LIMIT 100"
-        result = client.query(query, parameters={"cid": campaign_id})
-    else:
-        result = client.query(query)
-    return {"data": [dict(zip(result.column_names, row)) for row in result.result_rows]}
+    try:
+        from src.shared.db.clickhouse import get_clickhouse_client
+        client = get_clickhouse_client()
+        query = "SELECT * FROM alerts ORDER BY created_at DESC LIMIT 100"
+        if campaign_id:
+            query = f"SELECT * FROM alerts WHERE campaign_id = %(cid)s ORDER BY created_at DESC LIMIT 100"
+            result = client.query(query, parameters={"cid": campaign_id})
+        else:
+            result = client.query(query)
+        return {"data": [dict(zip(result.column_names, row)) for row in result.result_rows]}
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=f"告警查询失败: {str(e)}")

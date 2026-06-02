@@ -1,6 +1,16 @@
 import chromadb
 from src.memory.store import CHROMA_DB_PATH, COLLECTION_NAME
 
+# Module-level singleton to avoid re-creating ChromaDB client on every request
+_client: chromadb.ClientAPI | None = None
+
+
+def _get_client() -> chromadb.ClientAPI:
+    global _client
+    if _client is None:
+        _client = chromadb.PersistentClient(path=CHROMA_DB_PATH)
+    return _client
+
 
 def retrieve_similar_cases(
     objective: str,
@@ -10,7 +20,7 @@ def retrieve_similar_cases(
     top_k: int = 3,
 ) -> list[dict]:
     """检索与新活动最相似的历史案例"""
-    client = chromadb.PersistentClient(path=CHROMA_DB_PATH)
+    client = _get_client()
     collection = client.get_collection(name=COLLECTION_NAME)
 
     query_parts = [f"目标: {objective}", f"地区: {country}", f"平台: {platform}"]

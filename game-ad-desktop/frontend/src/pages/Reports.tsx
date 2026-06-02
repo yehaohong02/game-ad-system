@@ -9,7 +9,7 @@ import {
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
-import { useReportsStore, type TopCreative, type MarketInsight, type CompetitiveAlert } from '../stores/reports';
+import { useReportsStore, initReportsSync, type TopCreative, type MarketInsight, type CompetitiveAlert } from '../stores/reports';
 
 const { Text } = Typography;
 
@@ -97,6 +97,8 @@ export default function Reports() {
   } = useReportsStore();
 
   const selectedDate = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
+
+  useEffect(() => { initReportsSync(); }, []);
 
   useEffect(() => {
     if (reportType === 'daily') fetchDailyReport(selectedDate);

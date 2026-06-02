@@ -28,9 +28,9 @@ export class UniversalInjector extends BaseInjector {
             if (!config) continue;
             const el = item.querySelector(config.selector);
             if (el) {
-              entry[key] = config.attribute === 'text'
+              entry[key] = (!config.attribute || config.attribute === 'text')
                 ? el.textContent?.trim()
-                : el.getAttribute(config.attribute || 'textContent')?.trim();
+                : el.getAttribute(config.attribute)?.trim();
             }
           }
           if (Object.keys(entry).length > 0) results.push(entry);

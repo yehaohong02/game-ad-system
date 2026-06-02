@@ -3,11 +3,12 @@ import * as path from 'path';
 import { ProcessManager } from './process-manager';
 import { CrawlerManager } from './crawler/crawler-manager';
 import { setupIPC } from './ipc-handlers';
-import { createTray } from './tray';
+import { createTray, cleanupTray } from './tray';
 
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let processManager: ProcessManager;
+let crawlerManager: CrawlerManager;
 
 const isPackaged = app.isPackaged;
 const isDev = !isPackaged;
@@ -35,7 +36,7 @@ async function createWindow() {
   });
 
   if (isDev) {
-    mainWindow.loadURL('http://localhost:5173');
+    mainWindow.loadURL('http://localhost:5174');
     mainWindow.webContents.openDevTools();
   } else {
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
@@ -53,7 +54,7 @@ async function createWindow() {
 
 app.whenReady().then(async () => {
   processManager = new ProcessManager(SERVICES);
-  const crawlerManager = new CrawlerManager();
+  crawlerManager = new CrawlerManager();
 
   try {
     await processManager.startAll();
@@ -80,5 +81,19 @@ app.on('window-all-closed', () => {
 
 app.on('before-quit', async () => {
   mainWindow?.removeAllListeners('close');
-  await processManager.stopAll();
+  cleanupTray();
+  if (crawlerManager) {
+    crawlerManager.closeAll();
+  }
+  if (processManager) {
+    await processManager.stopAll();
+  }
+});
+
+// Global error handlers to prevent silent crashes
+process.on('uncaughtException', (err) => {
+  console.error('[MainProcess] Uncaught exception:', err);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('[MainProcess] Unhandled rejection:', reason);
 });

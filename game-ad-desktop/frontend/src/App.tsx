@@ -1,4 +1,5 @@
-import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route } from 'react-router-dom';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import AppLayout from './components/Layout/AppLayout';
 import Dashboard from './pages/Dashboard';
 import DataDiagnosis from './pages/DataDiagnosis';
@@ -17,9 +18,20 @@ import ManagerSafety from './pages/manager/ManagerSafety';
 import ManagerMemory from './pages/manager/ManagerMemory';
 import ManagerReports from './pages/manager/ManagerReports';
 
+function NotFound() {
+  return (
+    <div style={{ padding: 48, textAlign: 'center' }}>
+      <h1>404</h1>
+      <p>页面不存在</p>
+      <a href="#/">返回首页</a>
+    </div>
+  );
+}
+
 export default function App() {
   return (
     <HashRouter>
+      <ErrorBoundary>
       <Routes>
         <Route element={<AppLayout />}>
           <Route path="/" element={<Dashboard />} />
@@ -42,9 +54,10 @@ export default function App() {
           <Route path="/manager/platform" element={<PlatformData />} />
           <Route path="/manager/workshop" element={<Workshop />} />
 
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
+      </ErrorBoundary>
     </HashRouter>
   );
 }

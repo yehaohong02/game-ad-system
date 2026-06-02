@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 router = APIRouter(prefix="/execution", tags=["执行闭环"])
@@ -39,10 +39,13 @@ def run_agent(query: AgentQuery):
     Returns:
         Agent的决策结果和执行计划
     """
-    from src.execution.agent.executor import AdExecutorAgent
-    agent = AdExecutorAgent()
-    result = agent.run(query.query)
-    return {"result": result}
+    try:
+        from src.execution.agent.executor import AdExecutorAgent
+        agent = AdExecutorAgent()
+        result = agent.run(query.query)
+        return {"result": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Agent执行失败: {str(e)}")
 
 
 @router.post("/update-bid", summary="更新出价")
@@ -59,6 +62,14 @@ def update_bid(req: BidUpdateRequest):
     Returns:
         操作结果，包含成功/失败状态和消息
     """
-    from src.execution.tools.update_bid import update_bid as _update_bid
-    result = _update_bid(req.ad_id, req.new_bid, req.current_bid)
-    return result
+    try:
+        from src.execution.tools.update_bid import update_bid as _update_bid
+        result = _update_bid(req.ad_id, req.new_bid, req.current_bid)
+        return result
+    except Exception as e:
+        from src.safety.exceptions import BudgetExceededException, CircuitBreakerOpenException, BidConstraintException
+        if isinstance(e, CircuitBreakerOpenException):
+            raise HTTPException(status_code=429, detail=str(e))
+        elif isinstance(e, (BudgetExceededException, BidConstraintException)):
+            raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"出价更新失败: {str(e)}")

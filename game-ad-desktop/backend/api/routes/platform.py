@@ -1,7 +1,8 @@
 import re
 from fastapi import APIRouter, Query, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, HttpUrl
 from typing import Optional
+from src.shared.db.clickhouse import safe_query
 
 router = APIRouter()
 
@@ -16,57 +17,52 @@ def _validate_param(v: str, name: str) -> str:
 
 @router.get("/creatives")
 def get_platform_creatives(platform: str = Query("guangdada")):
-    from src.shared.db.clickhouse import get_clickhouse
-    client = get_clickhouse()
     platform = _validate_param(platform, "platform")
-    rows = client.query(f"""
+    data = safe_query(f"""
         SELECT * FROM platform_creatives
         WHERE platform = '{platform}'
-        ORDER BY scraped_at DESC LIMIT 100
+        ORDER BY last_seen DESC LIMIT 100
     """)
-    return {"data": [dict(zip(rows.column_names, r)) for r in rows.result_rows]}
+    return {"data": data}
 
 
 @router.get("/rankings")
 def get_platform_rankings(type: str = Query("weekly")):
-    from src.shared.db.clickhouse import get_clickhouse
-    client = get_clickhouse()
     type = _validate_param(type, "type")
-    rows = client.query(f"""
+    data = safe_query(f"""
         SELECT * FROM platform_rankings
-        WHERE ranking_type = '{type}'
-        ORDER BY ranking_date DESC LIMIT 50
+        WHERE metric_type = '{type}'
+        ORDER BY ranked_at DESC LIMIT 50
     """)
-    return {"data": [dict(zip(rows.column_names, r)) for r in rows.result_rows]}
+    return {"data": data}
 
 
 @router.post("/cross-validate")
 def cross_validate_endpoint():
     from src.platform.analyzers.cross_validator import cross_validate as do_cross_validate
-    from src.shared.db.clickhouse import get_clickhouse
-    client = get_clickhouse()
 
-    platform_rows = client.query("""
-        SELECT creative_id, platform, scraped_at FROM platform_creatives
-        ORDER BY scraped_at DESC LIMIT 500
+    platform_creatives = safe_query("""
+        SELECT creative_id, platform, last_seen FROM platform_creatives
+        ORDER BY last_seen DESC LIMIT 500
     """)
-    platform_creatives = [dict(zip(platform_rows.column_names, r)) for r in platform_rows.result_rows]
 
-    internal_rows = client.query("""
-        SELECT creative_id, avg(roi) as avg_roas, avg(ctr) as avg_ctr
+    internal_performance = safe_query("""
+        SELECT creative_id, avg(roas) as avg_roas, avg(ctr) as avg_ctr
         FROM ads_performance WHERE creative_id != ''
         GROUP BY creative_id
     """)
-    internal_performance = [dict(zip(internal_rows.column_names, r)) for r in internal_rows.result_rows]
 
     result = do_cross_validate(platform_creatives, internal_performance)
     return {"data": result}
 
 
+_VALID_DATA_TYPE = re.compile(r"^[a-zA-Z0-9_\-]+$")
+
+
 class PlatformConfigCreate(BaseModel):
-    id: str
+    id: str = Field(..., max_length=100, pattern=r"^[a-zA-Z0-9_\-]+$")
     name: str
-    url: str
+    url: HttpUrl
     selectors: dict = {}
 
 
@@ -76,17 +72,15 @@ class AnalyzePageRequest(BaseModel):
 
 
 class ScrapedDataStore(BaseModel):
-    platform_id: str
-    data_type: str
+    platform_id: str = Field(..., max_length=100, pattern=r"^[a-zA-Z0-9_\-]+$")
+    data_type: str = Field(..., pattern=r"^[a-zA-Z0-9_\-]+$")
     data: list
 
 
 @router.get("/configs")
 def get_platform_configs():
-    from src.shared.db.clickhouse import get_clickhouse
-    client = get_clickhouse()
-    rows = client.query("SELECT id, name, url, selectors, created_at FROM platform_configs ORDER BY created_at DESC")
-    return {"data": [dict(zip(rows.column_names, r)) for r in rows.result_rows]}
+    data = safe_query("SELECT id, name, url, selectors, created_at FROM platform_configs ORDER BY created_at DESC")
+    return {"data": data}
 
 
 @router.post("/configs")
@@ -133,17 +127,15 @@ def store_scraped_data(req: ScrapedDataStore):
 
 
 @router.get("/scraped-data/{platform_id}")
-def get_scraped_data(platform_id: str, data_type: str = Query("creatives")):
+def get_scraped_data(platform_id: str, data_type: str = Query("creatives", pattern=r"^[a-zA-Z0-9_\-]+$")):
     _validate_param(platform_id, "platform_id")
-    from src.shared.db.clickhouse import get_clickhouse
-    client = get_clickhouse()
-    rows = client.query(f"""
+    rows = safe_query(f"""
         SELECT data, scraped_at FROM platform_scraped_data
         WHERE platform_id = '{platform_id}' AND data_type = '{data_type}'
         ORDER BY scraped_at DESC LIMIT 1
     """)
-    if rows.result_rows:
+    if rows:
         import json
-        data = json.loads(rows.result_rows[0][0])
-        return {"data": data, "scraped_at": rows.result_rows[0][1]}
+        data = json.loads(rows[0]["data"])
+        return {"data": data, "scraped_at": rows[0]["scraped_at"]}
     return {"data": [], "scraped_at": None}

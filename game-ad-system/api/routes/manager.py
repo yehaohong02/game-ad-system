@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, HTTPException, UploadFile, File
 from pydantic import BaseModel
 from typing import Optional
 import tempfile, os
@@ -93,8 +93,4 @@ async def upload_excel(file: UploadFile = File(...)):
         }
 
     except Exception as e:
-        return {
-            "success": False,
-            "message": f"解析失败: {str(e)}",
-            "data": [],
-        }
+        raise HTTPException(status_code=422, detail=f"解析失败: {str(e)}")

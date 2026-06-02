@@ -12,7 +12,7 @@ def merge_and_clean(
 
     af_index = {}
     for af in af_records:
-        key = (af["campaign_id"], af["ad_set_id"], af["ad_id"])
+        key = (af.get("campaign_id", ""), af.get("ad_set_id", ""), af.get("ad_id", ""))
         af_index[key] = af
 
     merged = []

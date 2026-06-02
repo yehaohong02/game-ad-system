@@ -13,6 +13,7 @@ def retrieve_similar(query: str, top_k: int = 5) -> list[dict]:
                 case = json.loads(doc)
             except json.JSONDecodeError:
                 case = {"summary": doc}
-            case["distance"] = results["distances"][0][i] if results.get("distances") else 0
+            distances = results.get("distances")
+            case["distance"] = distances[0][i] if distances and len(distances[0]) > i else 0
             cases.append(case)
     return cases

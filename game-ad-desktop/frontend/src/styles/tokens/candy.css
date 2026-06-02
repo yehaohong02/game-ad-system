@@ -1,0 +1,45 @@
+[data-theme="candy"] {
+  --color-bg: #FAF3E7;
+  --color-surface: #FFFFFF;
+  --color-muted: #F1E8D5;
+  --color-ink: #1A1410;
+  --color-text: #1A1410;
+  --color-text-secondary: #6B5E53;
+  --color-text-muted: #9B8E84;
+  --color-primary: #4ECDC4;
+  --color-primary-hover: #3DBDB5;
+  --color-secondary: #FF89A7;
+  --color-highlight: #FFE08A;
+  --color-violet: #C7B8F0;
+  --color-peach: #FFCBA4;
+  --color-sky: #B8DCEC;
+
+  --border-width: 2px;
+  --border-color: #1A1410;
+  --border-color-subtle: #D4C8B8;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 9999px;
+
+  --shadow-hard: 3px 3px 0 #1A1410;
+  --shadow-hard-lg: 4px 4px 0 #1A1410;
+  --shadow-pressed: 1px 1px 0 #1A1410;
+  --shadow-none: none;
+
+  --font-main: 'M PLUS Rounded 1c', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui;
+  --font-pixel: 'DotGothic16', monospace;
+
+  --overlay-bg: rgba(0,0,0,0.45);
+  --overlay-pattern: radial-gradient(circle, #1A1410 1px, transparent 1px);
+  --overlay-pattern-size: 12px;
+
+  --scrollbar-track: #FAF3E7;
+  --scrollbar-thumb: #D4C8B8;
+  --scrollbar-thumb-hover: #B8A898;
+
+  --chart-grid: #E8DDD0;
+  --chart-text: #6B5E53;
+
+  --tag-bg: #F1E8D5;
+}

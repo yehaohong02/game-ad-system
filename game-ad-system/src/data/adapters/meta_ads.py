@@ -52,13 +52,18 @@ class MetaAdsAdapter(BaseAdapter):
         raise Exception(f"Failed after {max_retries} retries")
 
     def transform(self, raw_data: list[dict]) -> list[dict]:
+        import logging
+        logger = logging.getLogger(__name__)
         records = []
         for item in raw_data:
             installs = 0
             for action in item.get("actions", []):
-                if action["action_type"] == "app_install":
-                    installs = int(action["value"])
+                if action.get("action_type") == "app_install":
+                    installs = int(action.get("value", 0))
                     break
+            if installs == 0 and item.get("actions"):
+                logger.debug("No app_install action found for ad %s, actions: %s",
+                             item.get("ad_id"), [a.get("action_type") for a in item.get("actions", [])])
 
             records.append({
                 "campaign_id": item.get("campaign_id", ""),

@@ -27,8 +27,8 @@ class CircuitBreaker:
         if count == 1:
             self.redis.expire(key, self.window)
         if count >= self.threshold:
-            self.redis.set(f"circuit:{operation}:state", "open")
-            self.redis.set(f"circuit:{operation}:opened_at", time.time())
+            self.redis.set(f"circuit:{operation}:state", "open", ex=self.cooldown * 2)
+            self.redis.set(f"circuit:{operation}:opened_at", time.time(), ex=self.cooldown * 2)
 
     def record_success(self, operation: str):
         self.redis.delete(f"circuit:{operation}:failures")

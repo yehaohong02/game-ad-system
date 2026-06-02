@@ -5,14 +5,16 @@ from src.safety.guard import guard
 
 def get_ad_stats(ad_id: str, days: int = 7) -> dict:
     days = max(1, min(days, 90))
-    ad_id = ad_id.replace("'", "")
     client = get_clickhouse()
-    rows = client.query(f"""
+    rows = client.query(
+        """
         SELECT avg(spend) as avg_spend, avg(installs) as avg_installs,
-               avg(roi) as avg_roas, avg(cpi) as avg_cpi, avg(ctr) as avg_ctr
+               avg(roas) as avg_roas, avg(cpi) as avg_cpi, avg(ctr) as avg_ctr
         FROM ads_performance
-        WHERE ad_id = '{ad_id}' AND date >= today() - {days}
-    """)
+        WHERE ad_id = {ad_id:String} AND date >= today() - {days:UInt32}
+        """,
+        parameters={"ad_id": ad_id, "days": days},
+    )
     if rows.result_rows:
         return dict(zip(rows.column_names, rows.result_rows[0]))
     return {}
@@ -25,8 +27,8 @@ def pause_ad(ad_id: str, **kwargs) -> dict:
 
 
 @guard.protect(operation="update_bid")
-def update_bid(ad_id: str, new_bid: float, current_bid: float, **kwargs) -> dict:
-    """更新出价"""
+def update_bid(ad_id: str, *, current_bid: float, new_bid: float, **kwargs) -> dict:
+    """更新出价（current_bid 和 new_bid 必须以关键字传入以通过安全校验）"""
     return {"action": "bid_updated", "ad_id": ad_id, "new_bid": new_bid}
 
 
@@ -37,8 +39,8 @@ def create_ad(ad_set_id: str, creative_id: str, headline: str, body: str, **kwar
 
 
 @guard.protect(operation="redistribute_budget")
-def redistribute_budget(campaign_id: str, new_allocation: float, **kwargs) -> dict:
-    """调整预算分配"""
+def redistribute_budget(campaign_id: str, *, new_allocation: float, **kwargs) -> dict:
+    """调整预算分配（new_allocation 必须以关键字传入以通过安全校验）"""
     return {"action": "budget_redistributed", "campaign_id": campaign_id, "new_allocation": new_allocation}
 
 

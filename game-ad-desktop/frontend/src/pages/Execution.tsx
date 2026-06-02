@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Row, Col, Card, Button, Space, Tag, Table, Modal, Form, Input,
   Switch, Popconfirm, Typography, Badge, Tooltip,
@@ -9,7 +9,7 @@ import {
   CheckCircleOutlined, CloseCircleOutlined, LoadingOutlined,
   BulbOutlined, RobotOutlined,
 } from '@ant-design/icons';
-import { useExecutionStore, type ExecutionMode, type Rule, type QueueTask, type LogEntry, type AgentStep, type CompetitiveInsight } from '../stores/execution';
+import { useExecutionStore, initExecutionSync, type ExecutionMode, type Rule, type QueueTask, type LogEntry, type AgentStep, type CompetitiveInsight } from '../stores/execution';
 
 const { Text } = Typography;
 
@@ -37,6 +37,8 @@ const stepStatusColor: Record<string, string> = {
 const cardStyle = { background: '#1E293B', border: '1px solid #334155' };
 
 export default function Execution() {
+  useEffect(() => { initExecutionSync(); }, []);
+
   const {
     mode, rules, queue, logs, agentSteps, insights, loading,
     setMode, addRule, toggleRule, deleteRule, runAgent,

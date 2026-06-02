@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import {
   Card, Row, Col, Button, Tag, Image, Typography, Modal, Tooltip,
 } from 'antd';
@@ -9,7 +10,7 @@ import {
 } from '@ant-design/icons';
 import ReactECharts from 'echarts-for-react';
 import {
-  useCreativeInsightStore,
+  useCreativeInsightStore, initCreativeInsightSync,
   TrendItem, CreativeAnalysis, OptimizationSuggestion, FormulaWithData,
 } from '../stores/creativeInsightNew';
 import { useMaterialDataStore } from '../stores/materialData';
@@ -285,6 +286,8 @@ function SuggestionCard({ sug, selected, onToggle }: { sug: OptimizationSuggesti
 }
 
 export default function CreativeInsightNew() {
+  useEffect(() => { initCreativeInsightSync(); }, []);
+
   const {
     trends, creatives, suggestions, selectedSuggestions, toggleSuggestion,
     formulasWithData, selectedFormula, selectFormula,

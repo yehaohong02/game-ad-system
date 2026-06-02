@@ -1,0 +1,80 @@
+/* Buttons: capsule shape + hard shadow press effect */
+[data-theme="candy"] .ant-btn {
+  border-radius: 9999px;
+  border: 2px solid var(--border-color);
+  box-shadow: var(--shadow-hard);
+  transition: transform 0.1s, box-shadow 0.1s;
+  font-weight: 600;
+}
+[data-theme="candy"] .ant-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-hard-lg);
+}
+[data-theme="candy"] .ant-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: var(--shadow-pressed);
+}
+[data-theme="candy"] .ant-btn-primary {
+  background: var(--color-primary);
+  border-color: var(--color-ink);
+  color: var(--color-ink);
+}
+[data-theme="candy"] .ant-btn-primary:hover {
+  background: var(--color-primary-hover);
+}
+
+/* Cards: 2px border + hard shadow */
+[data-theme="candy"] .ant-card {
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: var(--shadow-hard);
+  border-radius: var(--radius-lg);
+}
+
+/* Menu: pink selected state */
+[data-theme="candy"] .ant-menu-item-selected {
+  background: var(--color-secondary) !important;
+  border-left: 3px solid var(--color-ink) !important;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+/* Inputs: 2px border */
+[data-theme="candy"] .ant-input,
+[data-theme="candy"] .ant-select-selector {
+  border-width: var(--border-width) !important;
+  border-color: var(--border-color) !important;
+}
+[data-theme="candy"] .ant-input:focus,
+[data-theme="candy"] .ant-select-focused .ant-select-selector {
+  border-color: var(--color-primary) !important;
+  box-shadow: 2px 2px 0 var(--color-primary) !important;
+}
+
+/* Modal */
+[data-theme="candy"] .ant-modal-mask {
+  background: var(--overlay-bg);
+}
+[data-theme="candy"] .ant-modal-content {
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: var(--shadow-hard-lg);
+  border-radius: var(--radius-lg);
+}
+
+/* Table */
+[data-theme="candy"] .ant-table {
+  border-radius: var(--radius-md);
+}
+[data-theme="candy"] .ant-table-thead > tr > th {
+  border-bottom: var(--border-width) solid var(--border-color) !important;
+}
+
+/* Tags */
+[data-theme="candy"] .ant-tag {
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-pill);
+  font-weight: 600;
+}
+
+/* No blur anywhere in candy mode */
+[data-theme="candy"] * {
+  backdrop-filter: none !important;
+}

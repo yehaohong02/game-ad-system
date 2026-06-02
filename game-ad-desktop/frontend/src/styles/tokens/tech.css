@@ -1,0 +1,45 @@
+[data-theme="tech"] {
+  --color-bg: #0B1121;
+  --color-surface: rgba(255,255,255,0.06);
+  --color-muted: rgba(255,255,255,0.04);
+  --color-ink: #E2E8F0;
+  --color-text: #E2E8F0;
+  --color-text-secondary: #94A3B8;
+  --color-text-muted: #64748B;
+  --color-primary: #38BDF8;
+  --color-primary-hover: #7DD3FC;
+  --color-secondary: #818CF8;
+  --color-highlight: #FBBF24;
+  --color-violet: #A78BFA;
+  --color-peach: #FB923C;
+  --color-sky: #38BDF8;
+
+  --border-width: 1px;
+  --border-color: rgba(255,255,255,0.08);
+  --border-color-subtle: rgba(255,255,255,0.06);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-pill: 9999px;
+
+  --shadow-hard: none;
+  --shadow-hard-lg: none;
+  --shadow-pressed: none;
+  --shadow-none: 0 4px 12px rgba(0,0,0,0.3);
+
+  --font-main: 'Inter', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui;
+  --font-pixel: 'JetBrains Mono', monospace;
+
+  --overlay-bg: rgba(0,0,0,0.6);
+  --overlay-pattern: none;
+  --overlay-pattern-size: 0;
+
+  --scrollbar-track: #0B1121;
+  --scrollbar-thumb: #1E293B;
+  --scrollbar-thumb-hover: #334155;
+
+  --chart-grid: #1E293B;
+  --chart-text: #94A3B8;
+
+  --tag-bg: rgba(255,255,255,0.06);
+}

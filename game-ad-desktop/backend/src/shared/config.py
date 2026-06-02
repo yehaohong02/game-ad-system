@@ -1,5 +1,7 @@
 """Central configuration via Pydantic Settings."""
 
+from __future__ import annotations
+
 from pydantic_settings import BaseSettings
 
 
@@ -18,7 +20,7 @@ class Settings(BaseSettings):
 
     # ChromaDB
     chromadb_host: str = "localhost"
-    chromadb_port: int = 8000
+    chromadb_port: int = 8001
     chromadb_collection: str = "creative_embeddings"
 
     # API
@@ -46,9 +48,28 @@ class Settings(BaseSettings):
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
 
+_settings: Settings | None = None
+
+
 def get_settings() -> Settings:
-    """Return a cached Settings instance."""
-    return Settings()
+    """Return the cached Settings singleton."""
+    global _settings
+    if _settings is None:
+        _settings = Settings()
+    return _settings
 
 
-settings = Settings()
+def reset_settings() -> None:
+    """Clear the cached settings singleton. Useful for testing."""
+    global _settings
+    _settings = None
+
+
+class _SettingsProxy:
+    """Lazy proxy so that `settings` always reflects the current singleton,
+    even after reset_settings() is called (e.g. in tests)."""
+    def __getattr__(self, name: str):
+        return getattr(get_settings(), name)
+
+
+settings = _SettingsProxy()

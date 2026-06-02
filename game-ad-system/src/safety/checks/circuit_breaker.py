@@ -1,8 +1,12 @@
-from datetime import datetime, timedelta
-from collections import deque
+import json
+import time
 
 from src.shared.config import settings
+from src.shared.db.redis_client import get_redis_client
 from src.safety.exceptions import CircuitBreakerOpenException
+
+# Redis key prefix for circuit breaker state
+_CB_KEY = "safety:circuit_breaker"
 
 
 class CircuitBreaker:
@@ -16,43 +20,63 @@ class CircuitBreaker:
         self.failure_threshold = failure_threshold or settings.circuit_breaker_failure_threshold
         self.cooldown_minutes = cooldown_minutes or settings.circuit_breaker_cooldown_minutes
 
-        self._failures: deque[datetime] = deque()
-        self._last_failure_time: datetime | None = None
-        self._is_open: bool = False
+    def _get_state(self) -> dict:
+        """Load circuit breaker state from Redis."""
+        try:
+            r = get_redis_client()
+            raw = r.get(_CB_KEY)
+            if raw:
+                return json.loads(raw)
+        except Exception:
+            pass
+        return {"failures": [], "last_failure_time": None, "is_open": False}
+
+    def _save_state(self, state: dict) -> None:
+        """Persist circuit breaker state to Redis."""
+        try:
+            r = get_redis_client()
+            r.set(_CB_KEY, json.dumps(state), ex=self.window_minutes * 60 * 10)
+        except Exception:
+            pass
 
     def can_execute(self) -> bool:
-        now = datetime.now()
+        now = time.time()
+        state = self._get_state()
 
-        if self._is_open and self._last_failure_time:
-            cooldown_end = self._last_failure_time + timedelta(minutes=self.cooldown_minutes)
+        if state["is_open"] and state["last_failure_time"]:
+            cooldown_end = state["last_failure_time"] + self.cooldown_minutes * 60
             if now >= cooldown_end:
                 self._reset()
                 return True
-            remaining = int((cooldown_end - now).total_seconds())
+            remaining = int(cooldown_end - now)
             raise CircuitBreakerOpenException(remaining)
 
-        cutoff = now - timedelta(minutes=self.window_minutes)
-        while self._failures and self._failures[0] < cutoff:
-            self._failures.popleft()
+        # Prune old failures outside the window
+        cutoff = now - self.window_minutes * 60
+        failures = [f for f in state["failures"] if f >= cutoff]
+        state["failures"] = failures
+        self._save_state(state)
 
         return True
 
     def record_failure(self) -> None:
-        now = datetime.now()
-        self._failures.append(now)
-        self._last_failure_time = now
+        now = time.time()
+        state = self._get_state()
 
-        cutoff = now - timedelta(minutes=self.window_minutes)
-        while self._failures and self._failures[0] < cutoff:
-            self._failures.popleft()
+        state["failures"].append(now)
+        state["last_failure_time"] = now
 
-        if len(self._failures) >= self.failure_threshold:
-            self._is_open = True
+        # Prune old failures outside the window
+        cutoff = now - self.window_minutes * 60
+        state["failures"] = [f for f in state["failures"] if f >= cutoff]
+
+        if len(state["failures"]) >= self.failure_threshold:
+            state["is_open"] = True
+
+        self._save_state(state)
 
     def record_success(self) -> None:
         pass
 
     def _reset(self) -> None:
-        self._failures.clear()
-        self._is_open = False
-        self._last_failure_time = None
+        self._save_state({"failures": [], "last_failure_time": None, "is_open": False})

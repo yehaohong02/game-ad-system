@@ -7,6 +7,7 @@ import { BookmarkStore } from './crawler/bookmark-store';
 import * as os from 'os';
 import * as fs from 'fs';
 import * as path from 'path';
+import { sanitizeId } from './utils';
 
 function getCpuUsage(): Promise<number> {
   return new Promise((resolve) => {
@@ -33,7 +34,25 @@ function getCpuUsage(): Promise<number> {
   });
 }
 
+const IPC_CHANNELS = [
+  'get-service-status', 'get-system-info',
+  'crawler:open-platform', 'crawler:auto-login', 'crawler:extract-html',
+  'crawler:run-selector', 'crawler:close-platform', 'crawler:get-platforms',
+  'crawler:save-platform', 'crawler:delete-platform', 'crawler:save-credentials',
+  'crawler:get-credentials', 'crawler:get-bookmarks', 'crawler:add-bookmark',
+  'crawler:delete-bookmark', 'crawler:navigate', 'crawler:get-url',
+  'crawler:auto-scan', 'crawler:detect-downloads', 'crawler:click-download',
+  'crawler:get-downloads', 'read-local-file', 'list-crawled-files',
+];
+
+export function cleanupIPC(): void {
+  for (const channel of IPC_CHANNELS) {
+    ipcMain.removeHandler(channel);
+  }
+}
+
 export function setupIPC(win: BrowserWindow, pm: ProcessManager, crawlerManager: CrawlerManager) {
+  cleanupIPC();
   ipcMain.handle('get-service-status', () => pm.getStatus());
 
   ipcMain.handle('get-system-info', async () => ({
@@ -49,24 +68,29 @@ export function setupIPC(win: BrowserWindow, pm: ProcessManager, crawlerManager:
   const bookmarkStore = new BookmarkStore();
 
   ipcMain.handle('crawler:open-platform', async (_e, platformId: string, url: string) => {
-    await crawlerManager.openPlatform(platformId, url);
+    const safeId = sanitizeId(platformId);
+    await crawlerManager.openPlatform(safeId, url);
     return { success: true };
   });
 
   ipcMain.handle('crawler:auto-login', async (_e, platformId: string, credentials: { username: string; password: string; usernameSelector?: string; passwordSelector?: string; submitSelector?: string }) => {
-    return await crawlerManager.autoLogin(platformId, credentials);
+    const safeId = sanitizeId(platformId);
+    return await crawlerManager.autoLogin(safeId, credentials);
   });
 
   ipcMain.handle('crawler:extract-html', async (_e, platformId: string) => {
-    return await crawlerManager.extractHtml(platformId);
+    const safeId = sanitizeId(platformId);
+    return await crawlerManager.extractHtml(safeId);
   });
 
   ipcMain.handle('crawler:run-selector', async (_e, platformId: string, selector: string, attribute?: string) => {
-    return await crawlerManager.runSelector(platformId, selector, attribute);
+    const safeId = sanitizeId(platformId);
+    return await crawlerManager.runSelector(safeId, selector, attribute);
   });
 
   ipcMain.handle('crawler:close-platform', async (_e, platformId: string) => {
-    crawlerManager.closePlatform(platformId);
+    const safeId = sanitizeId(platformId);
+    crawlerManager.closePlatform(safeId);
     return { success: true };
   });
 
@@ -84,12 +108,14 @@ export function setupIPC(win: BrowserWindow, pm: ProcessManager, crawlerManager:
   });
 
   ipcMain.handle('crawler:save-credentials', async (_e, platformId: string, credentials: { username: string; password: string }) => {
-    credentialStore.saveCredentials(platformId, credentials);
+    const safeId = sanitizeId(platformId);
+    credentialStore.saveCredentials(safeId, credentials);
     return { success: true };
   });
 
   ipcMain.handle('crawler:get-credentials', async (_e, platformId: string) => {
-    return credentialStore.getCredentials(platformId);
+    const safeId = sanitizeId(platformId);
+    return credentialStore.getCredentials(safeId);
   });
 
   // --- Bookmark IPC Handlers ---
@@ -108,29 +134,35 @@ export function setupIPC(win: BrowserWindow, pm: ProcessManager, crawlerManager:
   // --- Download IPC Handlers ---
 
   ipcMain.handle('crawler:navigate', async (_e, platformId: string, url: string) => {
-    await crawlerManager.navigateToUrl(platformId, url);
+    const safeId = sanitizeId(platformId);
+    await crawlerManager.navigateToUrl(safeId, url);
     return { success: true };
   });
 
   ipcMain.handle('crawler:get-url', async (_e, platformId: string) => {
-    return crawlerManager.getCurrentUrl(platformId);
+    const safeId = sanitizeId(platformId);
+    return crawlerManager.getCurrentUrl(safeId);
   });
 
   ipcMain.handle('crawler:auto-scan', async (_e, platformId: string, maxPages?: number) => {
-    return await crawlerManager.autoScan(platformId, maxPages ?? 10);
+    const safeId = sanitizeId(platformId);
+    return await crawlerManager.autoScan(safeId, maxPages ?? 10);
   });
 
   ipcMain.handle('crawler:detect-downloads', async (_e, platformId: string) => {
-    const buttons = await crawlerManager.detectDownloadButtons(platformId);
+    const safeId = sanitizeId(platformId);
+    const buttons = await crawlerManager.detectDownloadButtons(safeId);
     return { buttons };
   });
 
   ipcMain.handle('crawler:click-download', async (_e, platformId: string, selector: string) => {
-    return await crawlerManager.clickDownloadButton(platformId, selector);
+    const safeId = sanitizeId(platformId);
+    return await crawlerManager.clickDownloadButton(safeId, selector);
   });
 
   ipcMain.handle('crawler:get-downloads', async (_e, platformId: string) => {
-    const files = crawlerManager.getDownloads(platformId);
+    const safeId = sanitizeId(platformId);
+    const files = crawlerManager.getDownloads(safeId);
     return { files };
   });
 
@@ -144,28 +176,44 @@ export function setupIPC(win: BrowserWindow, pm: ProcessManager, crawlerManager:
     win.webContents.send('crawler:scan-progress', data);
   });
 
-  // File read handler for import
+  // Security: restrict file access to userData/crawled/ directory
+  const allowedBase = path.join(require('electron').app.getPath('userData'), 'crawled');
+
+  function isPathAllowed(targetPath: string): boolean {
+    const resolved = path.resolve(targetPath);
+    return resolved.startsWith(allowedBase + path.sep) || resolved === allowedBase;
+  }
+
+  // File read handler for import (restricted to allowedBase)
   ipcMain.handle('read-local-file', async (_e, filePath: string) => {
-    const buffer = fs.readFileSync(filePath);
-    return Array.from(buffer);
+    const resolved = path.resolve(filePath);
+    if (!isPathAllowed(resolved)) {
+      throw new Error('Access denied: path outside allowed directory');
+    }
+    const buffer = await fs.promises.readFile(resolved);
+    return buffer.toString('base64');
   });
 
-  // List crawled data files
+  // List crawled data files (restricted to allowedBase)
   ipcMain.handle('list-crawled-files', async (_e, crawlDir: string) => {
+    const resolved = path.resolve(crawlDir);
+    if (!isPathAllowed(resolved)) {
+      throw new Error('Access denied: path outside allowed directory');
+    }
     const result: { name: string; path: string; size: number; dir: string }[] = [];
-    const walk = (dir: string, rel: string) => {
-      if (!fs.existsSync(dir)) return;
+    const walk = (dir: string, rel: string, depth: number, maxDepth: number = 10) => {
+      if (depth > maxDepth || !fs.existsSync(dir)) return;
       for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
         const fullPath = path.join(dir, entry.name);
         const relPath = rel ? `${rel}/${entry.name}` : entry.name;
         if (entry.isDirectory()) {
-          walk(fullPath, relPath);
+          walk(fullPath, relPath, depth + 1, maxDepth);
         } else if (/\.xlsx?$/i.test(entry.name)) {
           result.push({ name: entry.name, path: fullPath, size: fs.statSync(fullPath).size, dir: rel });
         }
       }
     };
-    walk(crawlDir, '');
+    walk(resolved, '', 0);
     return result;
   });
 }

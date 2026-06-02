@@ -10,8 +10,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # 复制依赖文件
 COPY pyproject.toml .
 
-# 安装Python依赖
-RUN pip install --no-cache-dir .[dev]
+# 安装Python依赖 (仅生产依赖)
+RUN pip install --no-cache-dir .
 
 # 复制应用代码
 COPY src/ src/

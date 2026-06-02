@@ -147,6 +147,8 @@ export const useCreativeInsightStore = create<CreativeInsightState>((set, get) =
     } catch {
       addChatMessage({ role: 'ai', content: '图片识别服务暂时不可用，请稍后重试。' });
     } finally {
+      // Don't revoke the blob URL - the chat message still references it
+      // The browser will GC it when the page unloads or messages are cleared
       set({ aiLoading: false });
     }
   },

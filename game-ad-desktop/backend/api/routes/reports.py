@@ -18,7 +18,10 @@ def daily_report(date: str = Query(None)):
             d = dt_date.fromisoformat(date)
         except ValueError:
             raise HTTPException(status_code=400, detail=f"Invalid date: {date}")
-    return {"data": generate_daily_report(d)}
+    try:
+        return {"data": generate_daily_report(d)}
+    except Exception:
+        return {"data": {}}
 
 
 @router.get("/weekly")
@@ -26,4 +29,7 @@ def weekly_report():
     """返回最近 7 天的周报。"""
     from src.reports.generator import generate_weekly_report
 
-    return {"data": generate_weekly_report()}
+    try:
+        return {"data": generate_weekly_report()}
+    except Exception:
+        return {"data": {}}

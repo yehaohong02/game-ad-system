@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import {
   Table, Select, Button, Space, Tag, Drawer, message,
   Input, Checkbox, Image, Typography, Spin, Upload,
@@ -103,6 +103,12 @@ function AiAssistantPanel() {
     await fetchAiSuggestion(msg);
     scrollToBottom();
   };
+
+  useEffect(() => {
+    return () => {
+      if (previewImage) URL.revokeObjectURL(previewImage);
+    };
+  }, [previewImage]);
 
   const handleFileSelect = useCallback((file: File) => {
     if (!file.type.startsWith('image/')) { message.warning('请上传图片文件'); return; }
@@ -512,7 +518,7 @@ export default function DataDiagnosis() {
           category: String(row[colMap['游戏分类']] || ''),
           status: '',
           spend: num('素材花费'),
-          installs: 0,
+          installs: num('安装数'),
           cpi: 0,
           roas: 0,
           impressions: num('素材展示数'),
@@ -582,19 +588,26 @@ export default function DataDiagnosis() {
     return true;
   });
 
+  const nonSummaryRows = filteredData.filter((r) => !r.isSummary);
+  let totalRevenue = 0;
+  let totalSpend = 0;
+  const sumKeys = ['spend', 'installs', 'impressions', 'clicks', 'playCount', 'play2s', 'play6s', 'play25', 'play50', 'play75', 'play100'];
+  const sums: Record<string, number> = {};
+  sumKeys.forEach((k) => { sums[k] = nonSummaryRows.reduce((s: number, r: any) => s + (r[k] || 0), 0); });
+  nonSummaryRows.forEach((r: any) => {
+    totalSpend += r.spend || 0;
+    totalRevenue += (r.roas || 0) * (r.spend || 0);
+  });
+
   const summaryRow: any = {
     key: 'summary', isSummary: true, materialId: '汇总', preview: '', country: '', platform: '', category: '', status: '',
-    ...Object.fromEntries(
-      ['spend', 'installs', 'cpi', 'roas', 'impressions', 'cpm', 'clicks', 'cpc', 'ctr', 'playCount', 'play2s', 'play6s', 'play25', 'play50', 'play75', 'play100'].map((k) => [
-        k, filteredData.filter((r) => !r.isSummary).reduce((s: number, r: any) => s + (r[k] || 0), 0),
-      ])
-    ),
+    ...sums, cpi: 0, cpm: 0, cpc: 0, ctr: 0, roas: 0,
   };
   summaryRow.cpm = summaryRow.impressions > 0 ? +(summaryRow.spend / summaryRow.impressions * 1000).toFixed(2) : 0;
   summaryRow.cpc = summaryRow.clicks > 0 ? +(summaryRow.spend / summaryRow.clicks).toFixed(2) : 0;
   summaryRow.ctr = summaryRow.impressions > 0 ? +(summaryRow.clicks / summaryRow.impressions * 100).toFixed(2) : 0;
   summaryRow.cpi = summaryRow.installs > 0 ? +(summaryRow.spend / summaryRow.installs).toFixed(2) : 0;
-  summaryRow.roas = summaryRow.spend > 0 ? +(summaryRow.roas / filteredData.filter((r) => !r.isSummary).length).toFixed(2) : 0;
+  summaryRow.roas = totalSpend > 0 ? +(totalRevenue / totalSpend).toFixed(2) : 0;
   const tableData = [summaryRow, ...filteredData.filter((r) => !r.isSummary)];
 
   // Build columns - unified, controllable by custom panel
@@ -835,16 +848,24 @@ export default function DataDiagnosis() {
 
         {/* Unified Data Table */}
         <div style={{ flex: 1, overflow: 'auto' }}>
-          <Table
-            dataSource={tableData}
-            columns={allColumns}
-            pagination={{ pageSize: 15, showSizeChanger: true, showTotal: (total) => `共 ${total} 条` }}
-            size="small"
-            scroll={{ x: 'max-content' }}
-            rowClassName={(record) => record.isSummary ? 'summary-row' : ''}
-            rowSelection={{ selectedRowKeys: selectedRows, onChange: (keys) => setSelectedRows(keys as string[]) }}
-            className="dark-table"
-          />
+          {activeData.length === 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', padding: 60 }}>
+              <BarChartOutlined style={{ fontSize: 48, color: textMuted, marginBottom: 16 }} />
+              <Text style={{ color: textSecondary, fontSize: 14, marginBottom: 8 }}>暂无数据</Text>
+              <Text style={{ color: textMuted, fontSize: 12 }}>请通过上方"导入Excel"按钮上传素材数据文件</Text>
+            </div>
+          ) : (
+            <Table
+              dataSource={tableData}
+              columns={allColumns}
+              pagination={{ pageSize: 15, showSizeChanger: true, showTotal: (total) => `共 ${total} 条` }}
+              size="small"
+              scroll={{ x: 'max-content' }}
+              rowClassName={(record) => record.isSummary ? 'summary-row' : ''}
+              rowSelection={{ selectedRowKeys: selectedRows, onChange: (keys) => setSelectedRows(keys as string[]) }}
+              className="dark-table"
+            />
+          )}
         </div>
       </div>
 

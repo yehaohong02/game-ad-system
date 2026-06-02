@@ -75,7 +75,7 @@ export class CrawlerManager {
       const downloadId = `${platformId}_${timestamp}`;
       this.activeDownloads.set(downloadId, item);
 
-      // Timeout control (30s)
+      // Timeout control (120s — generous for large files on slow connections)
       const timeout = setTimeout(() => {
         if (this.activeDownloads.has(downloadId)) {
           item.cancel();
@@ -90,11 +90,11 @@ export class CrawlerManager {
               fileSize: 0,
               downloadedAt: new Date().toISOString(),
               status: 'error',
-              error: '下载超时（30秒）',
+              error: '下载超时（120秒）',
             });
           }
         }
-      }, 30000);
+      }, 120000);
 
       item.on('done', (_e: Electron.Event, state: string) => {
         clearTimeout(timeout);
@@ -113,6 +113,7 @@ export class CrawlerManager {
             this.downloads.set(platformId, []);
           }
           this.downloads.get(platformId)!.unshift(record);
+          this.pruneDownloads();
 
           if (this.onDownloadComplete) {
             this.onDownloadComplete(record);
@@ -123,6 +124,17 @@ export class CrawlerManager {
   }
 
   async openPlatform(platform: string, url: string): Promise<void> {
+    if (!this.isValidUrl(url)) {
+      throw new Error(`Invalid URL: ${url}. Only http/https URLs are allowed.`);
+    }
+
+    // Close existing window if any to prevent BrowserWindow leak
+    const existing = this.windows.get(platform);
+    if (existing && !existing.isDestroyed()) {
+      existing.close();
+      this.windows.delete(platform);
+    }
+
     const win = new BrowserWindow({
       width: 1200,
       height: 800,
@@ -169,11 +181,21 @@ export class CrawlerManager {
     const win = this.windows.get(platformId);
     if (!win) return { success: false, message: 'Platform window not open' };
 
+    // Use JSON.stringify to safely pass data into the injected script (prevents JS injection)
+    const payload = JSON.stringify({
+      username: credentials.username,
+      password: credentials.password,
+      usernameSelector: credentials.usernameSelector || '',
+      passwordSelector: credentials.passwordSelector || '',
+      submitSelector: credentials.submitSelector || '',
+    });
+
     const script = `
       (function() {
-        const userSelector = '${credentials.usernameSelector || ''}' || 'input[type="email"], input[type="text"], input[name="username"], input[name="email"], input[name="account"]';
-        const passSelector = '${credentials.passwordSelector || ''}' || 'input[type="password"]';
-        const submitSelector = '${credentials.submitSelector || ''}' || 'button[type="submit"], input[type="submit"], button.login, button.submit';
+        const data = JSON.parse(${JSON.stringify(payload)});
+        const userSelector = data.usernameSelector || 'input[type="email"], input[type="text"], input[name="username"], input[name="email"], input[name="account"]';
+        const passSelector = data.passwordSelector || 'input[type="password"]';
+        const submitSelector = data.submitSelector || 'button[type="submit"], input[type="submit"], button.login, button.submit';
 
         const userInput = document.querySelector(userSelector);
         const passInput = document.querySelector(passSelector);
@@ -183,11 +205,11 @@ export class CrawlerManager {
 
         // Trigger React/Vue controlled inputs
         const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
-        nativeInputValueSetter.call(userInput, '${credentials.username.replace(/'/g, "\\'")}');
+        nativeInputValueSetter.call(userInput, data.username);
         userInput.dispatchEvent(new Event('input', { bubbles: true }));
         userInput.dispatchEvent(new Event('change', { bubbles: true }));
 
-        nativeInputValueSetter.call(passInput, '${credentials.password.replace(/'/g, "\\'")}');
+        nativeInputValueSetter.call(passInput, data.password);
         passInput.dispatchEvent(new Event('input', { bubbles: true }));
         passInput.dispatchEvent(new Event('change', { bubbles: true }));
 
@@ -224,14 +246,14 @@ export class CrawlerManager {
     const win = this.windows.get(platformId);
     if (!win) throw new Error('Platform window not open');
 
-    const safeSelector = selector.replace(/'/g, "\\'");
-    const attr = attribute || 'textContent';
-    const safeAttr = attr.replace(/'/g, "\\'");
-    const attrField = attr !== 'textContent' ? `attribute: el.getAttribute('${safeAttr}')?.trim(),` : '';
+    // Use JSON.stringify to safely encode user input (prevents injection)
+    const safeSelector = JSON.stringify(selector);
+    const safeAttr = JSON.stringify(attribute || 'textContent');
+    const attrField = attribute && attribute !== 'textContent' ? `attribute: el.getAttribute(${safeAttr})?.trim(),` : '';
 
     return await win.webContents.executeJavaScript(`
       (function() {
-        const elements = document.querySelectorAll('${safeSelector}');
+        const elements = document.querySelectorAll(${safeSelector});
         return Array.from(elements).map(el => ({
           text: el.textContent?.trim(),
           ${attrField}
@@ -324,11 +346,12 @@ export class CrawlerManager {
     const win = this.windows.get(platformId);
     if (!win) return { success: false, message: 'Platform window not open' };
 
-    const safeSelector = selector.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    // Use JSON.stringify to safely encode selector (prevents injection)
+    const safeSelector = JSON.stringify(selector);
     const script = `
       (function() {
         try {
-          const el = document.querySelector('${safeSelector}');
+          const el = document.querySelector(${safeSelector});
           if (!el) return JSON.stringify({ success: false, message: 'Element not found' });
           el.scrollIntoView({ behavior: 'instant', block: 'center' });
           el.click();
@@ -351,14 +374,39 @@ export class CrawlerManager {
     return this.downloads.get(platformId) ?? [];
   }
 
+  private pruneDownloads(): void {
+    const oneHourAgo = Date.now() - 3600000;
+    for (const [platformId, records] of this.downloads) {
+      // Keep records from the last hour, then cap at 1000
+      const kept = records.filter(r => new Date(r.downloadedAt).getTime() > oneHourAgo);
+      this.downloads.set(platformId, kept.slice(0, 1000));
+    }
+  }
+
+  private isValidUrl(url: string): boolean {
+    try {
+      const parsed = new URL(url);
+      return ['https:', 'http:'].includes(parsed.protocol);
+    } catch {
+      return false;
+    }
+  }
+
   async navigateToUrl(platformId: string, url: string): Promise<void> {
     const win = this.windows.get(platformId);
     if (!win) throw new Error('Platform window not open');
+    if (!this.isValidUrl(url)) {
+      throw new Error(`Invalid or unsafe URL: ${url}`);
+    }
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => reject(new Error('Navigation timeout')), 15000);
       win.webContents.once('did-finish-load', () => {
         clearTimeout(timeout);
         resolve();
+      });
+      win.webContents.once('did-fail-load', (_event, errorCode, errorDesc) => {
+        clearTimeout(timeout);
+        reject(new Error(`Navigation failed: ${errorDesc} (code ${errorCode})`));
       });
       win.webContents.loadURL(url).catch(reject);
     });
@@ -442,7 +490,7 @@ export class CrawlerManager {
       await yieldToEventLoop();
 
       const url = urlQueue.shift()!;
-      const normalized = url.split('#')[0].split('?')[0];
+      const normalized = url.split('#')[0];
       if (visitedUrls.has(normalized)) continue;
       visitedUrls.add(normalized);
 
@@ -477,7 +525,7 @@ export class CrawlerManager {
 
             await win.webContents.executeJavaScript(`
               (function() {
-                const el = document.querySelector('${click.selector.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}');
+                const el = document.querySelector(${JSON.stringify(click.selector)});
                 if (el) { el.scrollIntoView({behavior:'instant',block:'center'}); el.click(); }
               })();
             `);
@@ -543,8 +591,8 @@ export class CrawlerManager {
   closePlatform(platformId: string): void {
     const win = this.windows.get(platformId);
     if (win) {
+      // Remove from map only after window actually closes (handled by 'closed' event in openPlatform)
       win.close();
-      this.windows.delete(platformId);
     }
   }
 

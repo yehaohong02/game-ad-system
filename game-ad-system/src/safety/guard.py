@@ -1,4 +1,5 @@
 import functools
+import inspect
 import logging
 from typing import Callable, Any
 
@@ -18,13 +19,20 @@ class SafetyGuard:
         self.bid_check = BidCheck()
 
     def protect(self, func: Callable) -> Callable:
-        """装饰器：在函数执行前进行安全检查"""
+        """装饰器：在函数执行前进行安全检查。
+        支持位置参数和关键字参数，通过函数签名自动映射参数名。"""
+
+        sig = inspect.signature(func)
 
         @functools.wraps(func)
         def wrapper(*args, **kwargs) -> Any:
-            new_bid = kwargs.get("new_bid")
-            current_bid = kwargs.get("current_bid", 0.0)
-            spend_amount = kwargs.get("spend_amount", 0.0)
+            # Bind positional args to parameter names so we can extract safety-related values
+            bound = sig.bind(*args, **kwargs)
+            bound.apply_defaults()
+
+            new_bid = bound.arguments.get("new_bid")
+            current_bid = bound.arguments.get("current_bid", 0.0)
+            spend_amount = bound.arguments.get("spend_amount", 0.0)
 
             # L2: 熔断器检查
             self.circuit_breaker.can_execute()

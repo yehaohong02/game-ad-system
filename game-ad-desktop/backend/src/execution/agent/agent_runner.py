@@ -20,6 +20,22 @@ class AdAgentRunner:
             temperature=0,
         )
         self.rule_engine = RuleEngine()
+        self._executor = None
+        self._cached_tools_id = None
+        self._cached_prompt_key = None
+
+    def _get_executor(self) -> AgentExecutor:
+        prompt_key = SYSTEM_PROMPT
+        tools_id = id(AD_TOOLS)
+        if self._executor is None or self._cached_tools_id != tools_id or self._cached_prompt_key != prompt_key:
+            prompt = PromptTemplate.from_template(
+                SYSTEM_PROMPT + "\n\n用户问题: {input}\n\n{agent_scratchpad}"
+            )
+            agent = create_react_agent(self.llm, AD_TOOLS, prompt)
+            self._executor = AgentExecutor(agent=agent, tools=AD_TOOLS, verbose=True, max_iterations=5)
+            self._cached_tools_id = tools_id
+            self._cached_prompt_key = prompt_key
+        return self._executor
 
     def run(self, query: str, context: dict = None) -> str:
         if context:
@@ -30,12 +46,7 @@ class AdAgentRunner:
 
         memory_context = self._retrieve_memory(query)
 
-        prompt = PromptTemplate.from_template(
-            SYSTEM_PROMPT + "\n\n用户问题: {input}\n\n{agent_scratchpad}"
-        )
-
-        agent = create_react_agent(self.llm, AD_TOOLS, prompt)
-        executor = AgentExecutor(agent=agent, tools=AD_TOOLS, verbose=True, max_iterations=5)
+        executor = self._get_executor()
 
         result = executor.invoke({
             "input": query,

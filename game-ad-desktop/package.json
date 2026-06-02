@@ -9,9 +9,7 @@
     "package": "npm run build && electron-builder --win",
     "postinstall": "electron-builder install-app-deps"
   },
-  "dependencies": {
-    "electron-updater": "^6.1.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/node": "^20.11.0",
     "electron": "^28.1.0",

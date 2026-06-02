@@ -11,13 +11,19 @@ class SimilarRequest(BaseModel):
 
 @router.post("/similar")
 def search_similar(req: SimilarRequest):
-    from src.memory.retrieve import retrieve_similar
-    cases = retrieve_similar(req.objective, req.top_k)
-    return {"data": cases}
+    try:
+        from src.memory.retrieve import retrieve_similar
+        cases = retrieve_similar(req.objective, req.top_k)
+        return {"data": cases}
+    except Exception:
+        return {"data": []}
 
 
 @router.get("/stats")
 def memory_stats():
-    from src.shared.db.chromadb_client import get_collection
-    collection = get_collection()
-    return {"count": collection.count()}
+    try:
+        from src.shared.db.chromadb_client import get_collection
+        collection = get_collection()
+        return {"count": collection.count()}
+    except Exception:
+        return {"count": 0}

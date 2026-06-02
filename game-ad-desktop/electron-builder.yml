@@ -9,6 +9,12 @@ files:
 extraResources:
   - from: backend/
     to: backend/
+    filter:
+      - "**/*"
+      - "!**/__pycache__/**"
+      - "!**/*.pyc"
+      - "!**/tests/**"
+      - "!**/test_*/**"
   - from: services/
     to: services/
 win:

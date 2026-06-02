@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Row, Col, Card, Input, Button, Space, Tag, Typography, Empty, Spin, Divider, Drawer, Badge, Tooltip,
 } from 'antd';
 import {
   SearchOutlined, ReloadOutlined, FileTextOutlined, ArrowRightOutlined,
 } from '@ant-design/icons';
-import { useMemoryStore, type CaseResult } from '../stores/memory';
+import { useMemoryStore, initMemorySync, type CaseResult } from '../stores/memory';
 
 const { Text, Paragraph } = Typography;
 
@@ -150,6 +150,8 @@ function CaseDetailDrawer({
 }
 
 export default function Memory() {
+  useEffect(() => { initMemorySync(); }, []);
+
   const {
     searchQuery, searchResults, allCases, weeklyReport, loading, reportLoading,
     hasSearched, setSearchQuery, search, fetchWeeklyReport,

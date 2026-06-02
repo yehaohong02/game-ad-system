@@ -30,6 +30,9 @@ def get_element_rankings():
     Returns:
         包含元素名称、效果分数、出现频次的排名列表
     """
-    from src.creative.analyzer.element_ranker import rank_elements
-    rankings = rank_elements({})
-    return {"data": [r.model_dump() for r in rankings]}
+    try:
+        from src.creative.analyzer.element_ranker import rank_elements
+        rankings = rank_elements({})
+        return {"data": [r.model_dump() for r in rankings]}
+    except (ImportError, ModuleNotFoundError):
+        return {"data": [], "message": "element_ranker module not available"}

@@ -1,9 +1,11 @@
 import chromadb
+import os
 from pathlib import Path
 
 from src.memory.schemas import CampaignCase
 
-CHROMA_DB_PATH = "./chroma_data"
+# Use an absolute path based on the project root to avoid working-directory issues
+CHROMA_DB_PATH = os.environ.get("CHROMA_DB_PATH", os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "chroma_data"))
 COLLECTION_NAME = "campaign_memory"
 
 

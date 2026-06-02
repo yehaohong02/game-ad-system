@@ -19,38 +19,47 @@ def generate_daily_report(target_date: date = None) -> dict:
     client = get_clickhouse()
 
     # 核心指标
-    metrics = client.query(f"""
+    metrics = client.query(
+        """
         SELECT
             sum(spend)       AS total_spend,
             sum(installs)    AS total_installs,
-            avg(roi)         AS avg_roas,
+            avg(roas)        AS avg_roas,
             avg(cpi)         AS avg_cpi,
             sum(clicks) / sum(impressions) AS avg_ctr
         FROM ads_performance
-        WHERE date = '{target_date}'
-    """)
+        WHERE date = {target_date:Date}
+        """,
+        parameters={"target_date": target_date},
+    )
 
     # 异常告警 — 对齐 anomaly.py 写入的列名
-    alerts = client.query(f"""
+    alerts = client.query(
+        """
         SELECT
             count()                                                              AS total,
             sum(CASE WHEN severity = 'critical' THEN 1 ELSE 0 END)             AS critical
         FROM alerts
-        WHERE alert_date = '{target_date}'
-    """)
+        WHERE alert_date = {target_date:Date}
+        """,
+        parameters={"target_date": target_date},
+    )
 
     # Top 5 素材
-    top_creatives = client.query(f"""
+    top_creatives = client.query(
+        """
         SELECT
             creative_id,
-            avg(roi)   AS roas,
+            avg(roas)  AS roas,
             sum(spend) AS spend
         FROM ads_performance
-        WHERE date = '{target_date}' AND creative_id != ''
+        WHERE date = {target_date:Date} AND creative_id != ''
         GROUP BY creative_id
         ORDER BY roas DESC
         LIMIT 5
-    """)
+        """,
+        parameters={"target_date": target_date},
+    )
 
     return {
         "date": str(target_date),
@@ -78,15 +87,18 @@ def generate_weekly_report() -> dict:
 
     client = get_clickhouse()
 
-    metrics = client.query(f"""
+    metrics = client.query(
+        """
         SELECT
             sum(spend)       AS total_spend,
             sum(installs)    AS total_installs,
-            avg(roi)         AS avg_roas,
+            avg(roas)        AS avg_roas,
             avg(cpi)         AS avg_cpi
         FROM ads_performance
-        WHERE date BETWEEN '{start_date}' AND '{end_date}'
-    """)
+        WHERE date BETWEEN {start_date:Date} AND {end_date:Date}
+        """,
+        parameters={"start_date": start_date, "end_date": end_date},
+    )
 
     return {
         "period": f"{start_date} ~ {end_date}",

@@ -725,12 +725,15 @@ ${base}
 
       newFormulas.push(formula);
 
-      structures[formulaId] = [
+      // Use spread to create new object instead of direct mutation
+      const newEntry: StructureItem[] = [
         { time: '0-3秒', type: '黄金3秒', content: rule.hook },
         { time: '3-15秒', type: '核心玩法', content: rule.core },
         { time: '15-30秒', type: '情绪爆点', content: rule.climax },
         { time: '30秒+', type: 'CTA', content: rule.cta },
       ];
+      const updatedStructures = { ...structures, [formulaId]: newEntry };
+      Object.assign(structures, updatedStructures);
     });
 
     if (newFormulas.length > 0) {

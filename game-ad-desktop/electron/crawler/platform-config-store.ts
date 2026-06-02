@@ -22,11 +22,15 @@ export class PlatformConfigStore {
   }
 
   private load(): void {
-    if (fs.existsSync(this.filePath)) {
-      const data = JSON.parse(fs.readFileSync(this.filePath, 'utf-8'));
-      for (const config of data) {
-        this.configs.set(config.id, config);
+    try {
+      if (fs.existsSync(this.filePath)) {
+        const data = JSON.parse(fs.readFileSync(this.filePath, 'utf-8'));
+        for (const config of data) {
+          this.configs.set(config.id, config);
+        }
       }
+    } catch {
+      console.error('[PlatformConfigStore] Failed to load configs, starting fresh');
     }
   }
 

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import dayjs from 'dayjs';
 import { useMaterialDataStore, type MaterialRecord } from './materialData';
 
 export interface BudgetInfo {
@@ -29,6 +30,7 @@ export interface AuditLogEntry {
   user: string;
   detail: string;
   result: 'success' | 'blocked';
+  _isDemo?: boolean;
 }
 
 export interface OperationPreview {
@@ -129,19 +131,21 @@ function deriveSafety(data: MaterialRecord[]): Pick<SafetyState, 'budget' | 'cir
     const topItem = [...items].sort((a, b) => toNum(b.spend) - toNum(a.spend))[0];
     if (topItem) {
       auditLog.push({
-        timestamp: `2026-05-20 ${String(9 + logIdx).padStart(2, '0')}:${String(15 + logIdx * 7 % 45).padStart(2, '0')}:00`,
+        timestamp: dayjs().hour(9 + logIdx).minute(15 + logIdx * 7 % 45).second(0).format('YYYY-MM-DD HH:mm:ss'),
         action: '出价调整', user: ['张三', '李四', '王五'][logIdx % 3],
         detail: `${topItem.materialId} CPC ¥${toNum(topItem.cpc).toFixed(2)} → ¥${(toNum(topItem.cpc) * 0.85).toFixed(2)} (${cat})`,
         result: catSpend > 10000 ? 'success' : 'blocked',
+        _isDemo: true,
       });
       logIdx++;
     }
     if (zeroImp.length > 0) {
       auditLog.push({
-        timestamp: `2026-05-20 ${String(10 + logIdx).padStart(2, '0')}:30:00`,
+        timestamp: dayjs().hour(10 + logIdx).minute(30).second(0).format('YYYY-MM-DD HH:mm:ss'),
         action: '批量暂停', user: ['张三', '李四', '王五'][logIdx % 3],
         detail: `暂停${cat} ${zeroImp.length}条零曝光素材`,
         result: 'blocked',
+        _isDemo: true,
       });
       logIdx++;
     }
@@ -196,13 +200,15 @@ export const useSafetyStore = create<SafetyState>((set) => ({
     set((state) => ({ rules: [...state.rules, rule] })),
 }));
 
-useMaterialDataStore.subscribe((state) => {
-  if (state.data.length > 0) {
-    useSafetyStore.setState(deriveSafety(state.data));
+// Sync with materialData — call from page useEffect instead of module scope
+export function initSafetySync() {
+  useMaterialDataStore.subscribe((state) => {
+    if (state.data.length > 0) {
+      useSafetyStore.setState(deriveSafety(state.data));
+    }
+  });
+  const initData = useMaterialDataStore.getState().data;
+  if (initData.length > 0) {
+    useSafetyStore.setState(deriveSafety(initData));
   }
-});
-
-const initData = useMaterialDataStore.getState().data;
-if (initData.length > 0) {
-  useSafetyStore.setState(deriveSafety(initData));
 }

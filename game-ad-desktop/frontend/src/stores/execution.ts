@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import dayjs from 'dayjs';
 import { executionApi } from '../services/api';
 import { useMaterialDataStore, type MaterialRecord } from './materialData';
 
@@ -17,6 +18,7 @@ export interface QueueTask {
   type: string;
   status: 'pending' | 'running' | 'done' | 'failed';
   created_at: string;
+  _isDemo?: boolean;
 }
 
 export interface LogEntry {
@@ -47,6 +49,7 @@ interface ExecutionState {
   queue: QueueTask[];
   logs: LogEntry[];
   agentSteps: AgentStep[];
+  agentOutput?: string;
   insights: CompetitiveInsight[];
   loading: boolean;
   setMode: (mode: ExecutionMode) => void;
@@ -106,7 +109,7 @@ function deriveExecution(data: MaterialRecord[]): Pick<ExecutionState, 'rules' |
         name: `${cat}-低CTR素材降频`, condition: `CTR < 0.5% 且 曝光>1万 (${lowCtr.length}条)`, action: '暂停低效素材', enabled: true,
       });
       logs.push({ timestamp: `10:00:${String(3 + step).padStart(2, '0')}`, level: 'warn', message: `${cat} ${lowCtr.length}条素材CTR<0.5%, 已生成降频规则` });
-      queue.push({ task_id: `t_${String(++taskIdx).padStart(3, '0')}`, type: `${cat}-低CTR扫描`, status: 'done', created_at: '2026-05-20 09:15' });
+      queue.push({ task_id: `t_${String(++taskIdx).padStart(3, '0')}`, type: `${cat}-低CTR扫描`, status: 'done', created_at: dayjs().format('YYYY-MM-DD HH:mm') });
     }
 
     // Rule: High CPM materials
@@ -187,9 +190,9 @@ function deriveExecution(data: MaterialRecord[]): Pick<ExecutionState, 'rules' |
   // Running task
   if (data.length > 0) {
     const first = data[0];
-    queue.push({ task_id: `t_${String(++taskIdx).padStart(3, '0')}`, type: `${first.materialId}-曝光优化调整`, status: 'running', created_at: '2026-05-20 10:00' });
+    queue.push({ task_id: `t_${String(++taskIdx).padStart(3, '0')}`, type: `${first.materialId}-曝光优化调整`, status: 'running', created_at: dayjs().format('YYYY-MM-DD HH:mm'), _isDemo: true });
     agentSteps.push({ step: ++step, thinking: `正在执行 ${first.materialId} 的出价调整...`, action: '执行中', result: '等待结果', status: 'running' });
-    queue.push({ task_id: `t_${String(++taskIdx).padStart(3, '0')}`, type: '全量CTR扫描', status: 'pending', created_at: '2026-05-20 10:15' });
+    queue.push({ task_id: `t_${String(++taskIdx).padStart(3, '0')}`, type: '全量CTR扫描', status: 'pending', created_at: dayjs().add(15, 'minute').format('YYYY-MM-DD HH:mm'), _isDemo: true });
   }
 
   return { rules, queue, logs, agentSteps, insights };
@@ -224,26 +227,29 @@ export const useExecutionStore = create<ExecutionState>((set) => ({
     })),
 
   runAgent: async () => {
-    set({ loading: true });
+    set({ loading: true, agentSteps: [] });
     try {
-      await executionApi.runAgent({ mode: 'auto' });
-    } catch {
-      // swallow in mock mode
+      const res = await executionApi.runAgent({ mode: 'auto' });
+      if (res?.data?.result) {
+        set({ agentSteps: res.data.result.steps || [], agentOutput: res.data.result.output });
+      }
+    } catch (e) {
+      console.error('Agent run failed:', e);
     } finally {
       set({ loading: false });
     }
   },
 }));
 
-// Auto-derive from materialData
-useMaterialDataStore.subscribe((state) => {
-  if (state.data.length > 0) {
-    useExecutionStore.setState(deriveExecution(state.data));
+// Sync with materialData — call from page useEffect instead of module scope
+export function initExecutionSync() {
+  useMaterialDataStore.subscribe((state) => {
+    if (state.data.length > 0) {
+      useExecutionStore.setState(deriveExecution(state.data));
+    }
+  });
+  const initData = useMaterialDataStore.getState().data;
+  if (initData.length > 0) {
+    useExecutionStore.setState(deriveExecution(initData));
   }
-});
-
-// Initial derive
-const initData = useMaterialDataStore.getState().data;
-if (initData.length > 0) {
-  useExecutionStore.setState(deriveExecution(initData));
 }

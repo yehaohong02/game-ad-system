@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { dataApi } from '../services/api';
 
+let abortController: AbortController | null = null;
+
 export interface Campaign {
   campaign_id: string;
   country: string;
@@ -72,19 +74,21 @@ export const useDataDiagnosisStore = create<DataDiagnosisState>((set, get) => ({
   setSelectedRows: (keys) => set({ selectedRows: keys }),
 
   fetchCampaigns: async () => {
+    abortController?.abort();
+    abortController = new AbortController();
     set({ loading: true });
     try {
-      const res = await dataApi.getPerformance(get().filters);
+      const res = await dataApi.getPerformance(get().filters, { signal: abortController.signal });
       const data = (res as any)?.data;
       if (Array.isArray(data) && data.length > 0) {
         set({ campaigns: data });
       } else {
         set({ campaigns: mockCampaigns });
       }
-    } catch {
-      set({ campaigns: mockCampaigns });
+    } catch (e: any) {
+      if (e.name !== 'AbortError') set({ campaigns: mockCampaigns });
     } finally {
-      set({ loading: false });
+      if (!abortController.signal.aborted) set({ loading: false });
     }
   },
 

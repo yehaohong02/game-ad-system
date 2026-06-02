@@ -10,6 +10,8 @@ class BidCheck:
         self.max_ratio = max_ratio or settings.bid_increase_max_ratio
 
     def validate(self, current_bid: float, new_bid: float) -> None:
+        if new_bid <= 0:
+            raise BidConstraintException(current_bid, new_bid, self.max_ratio)
         if current_bid <= 0:
             return
 

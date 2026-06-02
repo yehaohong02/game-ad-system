@@ -14,7 +14,7 @@ def sync_cases():
     rows = client.query("""
         SELECT campaign_id, country, platform,
                sum(spend) as total_spend, sum(installs) as total_installs,
-               avg(roi) as avg_roas
+               avg(roas) as avg_roas
         FROM ads_performance
         WHERE date >= today() - 7
         GROUP BY campaign_id, country, platform

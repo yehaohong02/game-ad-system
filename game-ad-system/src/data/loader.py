@@ -14,6 +14,6 @@ def load_to_clickhouse(records: list[dict]) -> None:
     client = get_clickhouse_client()
     rows = []
     for r in records:
-        rows.append([r[col] for col in COLUMN_NAMES])
+        rows.append([r.get(col, 0 if col in ("impressions", "clicks", "installs") else 0.0 if col in ("spend", "revenue", "roi") else "") for col in COLUMN_NAMES])
 
     client.insert("ads_performance", rows, column_names=COLUMN_NAMES)

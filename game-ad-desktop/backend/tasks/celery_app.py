@@ -4,7 +4,7 @@ from src.shared.config import settings
 app = Celery(
     "game_ad",
     broker=f"redis://{settings.redis_host}:{settings.redis_port}/{settings.redis_db}",
-    backend=f"redis://{settings.redis_host}:{settings.redis_port}/{settings.redis_db + 1}",
+    backend=f"redis://{settings.redis_host}:{settings.redis_port}/{min(settings.redis_db + 1, 15)}",
 )
 
 app.conf.timezone = "Asia/Shanghai"

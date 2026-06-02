@@ -13,7 +13,7 @@ app.whenReady().then(() => {
     },
   });
 
-  win.loadURL('http://localhost:5173');
+  win.loadURL('http://localhost:5174');
 
   win.webContents.on('did-finish-load', () => {
     setTimeout(async () => {

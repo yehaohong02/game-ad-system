@@ -119,7 +119,7 @@ interface SettingsState {
   updateAIModel: (config: Partial<AIModelConfig>) => void;
   selectProvider: (presetId: string) => void;
   updateNotifications: (config: Partial<NotificationConfig>) => void;
-  testConnection: (type: Connection['type']) => void;
+  testConnection: (type: Connection['type']) => Promise<void>;
   saveSettings: () => Promise<void>;
   getApiKey: () => string;
   getProviderConfig: () => { apiKey: string; baseUrl: string; model: string; provider: string; apiFormat: string };
@@ -153,9 +153,9 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     notes: saved.notes || '',
   },
   connections: [
-    { name: 'ClickHouse', type: 'clickhouse', host: '192.168.1.100', port: 8123, status: 'connected' },
-    { name: 'Redis', type: 'redis', host: '192.168.1.101', port: 6379, status: 'connected' },
-    { name: 'ChromaDB', type: 'chromadb', host: '192.168.1.102', port: 8000, status: 'disconnected' },
+    { name: 'ClickHouse', type: 'clickhouse', host: 'localhost', port: 8123, status: 'disconnected' },
+    { name: 'Redis', type: 'redis', host: 'localhost', port: 6379, status: 'disconnected' },
+    { name: 'ChromaDB', type: 'chromadb', host: 'localhost', port: 8000, status: 'disconnected' },
   ],
   notifications: { email: true, desktop: true, alertLevel: 'critical' },
   saving: false,
@@ -184,12 +184,23 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   updateNotifications: (config) =>
     set((state) => ({ notifications: { ...state.notifications, ...config } })),
 
-  testConnection: (type) =>
+  testConnection: async (type) => {
     set((state) => ({
       connections: state.connections.map((c) =>
-        c.type === type ? { ...c, status: c.status === 'connected' ? 'disconnected' : 'connected' } : c
+        c.type === type ? { ...c, status: 'connected' as const } : c
       ),
-    })),
+    }));
+    try {
+      const res = await fetch('http://localhost:8000/api/health', { signal: AbortSignal.timeout(5000) });
+      if (!res.ok) throw new Error('Health check failed');
+    } catch {
+      set((state) => ({
+        connections: state.connections.map((c) =>
+          c.type === type ? { ...c, status: 'disconnected' as const } : c
+        ),
+      }));
+    }
+  },
 
   saveSettings: async () => {
     set({ saving: true });

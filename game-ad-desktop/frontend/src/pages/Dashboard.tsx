@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Row, Col, Card, Tag, Typography, Button, Input, Space, Divider, Table } from 'antd';
 import {
   EditOutlined, CheckOutlined,
@@ -9,6 +9,7 @@ import {
 } from '@ant-design/icons';
 import ReactECharts from 'echarts-for-react';
 import { useMaterialDataStore } from '../stores/materialData';
+import { useDashboardStore, initDashboardSync } from '../stores/dashboard';
 
 const { Text } = Typography;
 
@@ -36,6 +37,11 @@ export default function Dashboard() {
   const [title, setTitle] = useState(() => localStorage.getItem('dashboard_title') || '5月设计师数据诊断报告');
   const [editingTitle, setEditingTitle] = useState(false);
   const materialData = useMaterialDataStore(s => s.data);
+  const dashMetrics = useDashboardStore(s => s.metrics);
+
+  useEffect(() => {
+    initDashboardSync();
+  }, []);
   const data: any[] = useMemo(() => {
     const rows = materialData.filter(r => r.spend > 0);
     return rows.filter(r => r.category && r.category !== '');
@@ -231,6 +237,13 @@ export default function Dashboard() {
         <Tag color="blue" style={{ fontSize: 12, margin: 0 }}>{data.length} 条素材</Tag>
         <Tag color="purple" style={{ fontSize: 12, margin: 0 }}>{categoryData.length} 个品类</Tag>
         <Tag color={m.zeroPlayCount > 20 ? 'red' : 'orange'} style={{ fontSize: 12, margin: 0 }}>{m.withPlayCount} 条有播放</Tag>
+        {dashMetrics.installs > 0 && (
+          <>
+            <Tag color="green" style={{ fontSize: 12, margin: 0 }}>安装 {fmtNum(dashMetrics.installs)}</Tag>
+            <Tag color="cyan" style={{ fontSize: 12, margin: 0 }}>CPI ${dashMetrics.cpi.toFixed(2)}</Tag>
+            <Tag color="gold" style={{ fontSize: 12, margin: 0 }}>ROAS {dashMetrics.roas.toFixed(2)}</Tag>
+          </>
+        )}
       </div>
 
       {/* ===== Section 1: 整体表现概览 + 总结评估 融合 ===== */}
