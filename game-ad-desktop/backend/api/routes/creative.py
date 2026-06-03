@@ -15,9 +15,11 @@ async def upload_creative(file: UploadFile = File(...)):
     if len(contents) > MAX_FILE_SIZE:
         raise HTTPException(status_code=413, detail="File too large (max 50MB)")
 
-    # 调用CLIP视觉标签器
+    # 调用CLIP视觉标签器（返回连续值）
     from src.creative.tagger.visual_tagger import tag_visual
-    tags = tag_visual(contents)
+    visual_result = tag_visual(contents)
+    tags = visual_result["tags"]          # 标签名列表（兼容旧接口）
+    scene_scores = visual_result["scores"]  # 全部标签的连续值分数
 
     # 生成素材ID和缩略图base64
     creative_id = f"CR-{uuid.uuid4().hex[:6].upper()}"
@@ -33,6 +35,7 @@ async def upload_creative(file: UploadFile = File(...)):
         "cpi": 0,
         "roas": 0,
         "tags": tags,
+        "scene_scores": scene_scores,
         "status": "review",
         "name": file.filename or f"上传素材 {creative_id}",
         "spend": 0,
@@ -44,7 +47,7 @@ async def upload_creative(file: UploadFile = File(...)):
         "trend": "stable",
     }
 
-    return {"creative": creative, "tags": tags}
+    return {"creative": creative, "tags": tags, "scene_scores": scene_scores}
 
 
 @router.get("/rankings")

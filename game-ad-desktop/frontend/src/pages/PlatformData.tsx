@@ -13,6 +13,7 @@ import {
   PlayCircleOutlined, BarChartOutlined,
 } from '@ant-design/icons';
 import { usePlatformDataStore } from '../stores/platformData';
+import PageHelp from '../components/PageHelp';
 
 const { Text } = Typography;
 
@@ -253,6 +254,8 @@ export default function PlatformData() {
 
       {/* Right main area */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12, overflow: 'hidden' }}>
+        <PageHelp page="platform" />
+
         {/* Smart download panel (collapsible) */}
         {smartPanelOpen && (
           <Card style={cardStyle} bodyStyle={{ padding: 12 }}>

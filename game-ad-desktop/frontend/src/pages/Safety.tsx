@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Row, Col, Card, Table, Button, Space, Tag, Switch, Typography, Modal, Form, Input, Select, message, Progress, Badge, Tooltip } from 'antd';
 import { PlusOutlined, DeleteOutlined, WarningOutlined, SafetyOutlined, DollarOutlined, ExperimentOutlined } from '@ant-design/icons';
 import { useSafetyStore, initSafetySync, type CircuitBreaker, type RiskRule, type OperationPreview } from '../stores/safety';
+import PageHelp from '../components/PageHelp';
 
 const { Text } = Typography;
 
@@ -197,6 +198,8 @@ export default function Safety() {
           </Col>
         </Row>
       </Card>
+
+      <PageHelp page="safety" />
 
       {/* 操作预演 */}
       {operationPreviews.length > 0 && (

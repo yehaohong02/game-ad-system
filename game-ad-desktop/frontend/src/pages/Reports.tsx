@@ -10,6 +10,7 @@ import {
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { useReportsStore, initReportsSync, type TopCreative, type MarketInsight, type CompetitiveAlert } from '../stores/reports';
+import PageHelp from '../components/PageHelp';
 
 const { Text } = Typography;
 
@@ -165,6 +166,8 @@ export default function Reports() {
           )}
         </Row>
       </Card>
+
+      <PageHelp page="reports" />
 
       <Spin spinning={loading}>
         {/* Metrics inline bar */}

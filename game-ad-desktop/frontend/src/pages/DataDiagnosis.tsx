@@ -18,6 +18,7 @@ import {
 import { useDataDiagnosisStore } from '../stores/dataDiagnosis';
 import { useCreativeInsightStore, Creative } from '../stores/creativeInsight';
 import { useMaterialDataStore } from '../stores/materialData';
+import PageHelp from '../components/PageHelp';
 
 const { Text } = Typography;
 const { TextArea } = Input;
@@ -708,6 +709,7 @@ export default function DataDiagnosis() {
             >清除数据</Button>
             <Button icon={<RobotOutlined />} onClick={handleAiDiagnosis} size="small"
               style={{ background: '#7C3AED', borderColor: '#7C3AED', color: '#fff', fontSize: 11 }}>AI 诊断</Button>
+            <PageHelp page="data" />
           </Space>
         </div>
 

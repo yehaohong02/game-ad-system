@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
 
-from api.routes import ai, creative, data, execution, memory, platform, reports
+from api.routes import ai, cheat, creative, data, execution, experiment, memory, platform, reports
 
 app = FastAPI(
     title="游戏买量智能投放系统",
@@ -27,7 +27,7 @@ app = FastAPI(
 # CORS middleware for frontend dev server
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:5174", "http://127.0.0.1:5174"],
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:5174", "http://127.0.0.1:5174", "http://localhost:5175", "http://127.0.0.1:5175"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -41,6 +41,8 @@ app.include_router(memory.router, prefix="/api/memory", tags=["memory"])
 app.include_router(platform.router, prefix="/api/platform", tags=["platform"])
 app.include_router(reports.router, prefix="/api/reports", tags=["reports"])
 app.include_router(ai.router, prefix="/api/ai", tags=["ai"])
+app.include_router(experiment.router, prefix="/api/experiment", tags=["experiment"])
+app.include_router(cheat.router, prefix="/api/cheat", tags=["cheat"])
 
 
 @app.get("/api/health", tags=["system"], summary="健康检查")

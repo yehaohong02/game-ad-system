@@ -1,0 +1,99 @@
+{
+  "schema_version": "1.4",
+  "calibration_samples": 1,
+  "content_form": "opinion-video",
+  "target_publish_cadence_days": 3,
+  "platform": "douyin",
+  "data_collection": "manual",
+  "rubric_version": 1,
+  "rubric_formula": "(ER*1.5 + SR*1.5 + HP*1.5 + QL + NA + AB + SAT) / 8.5 * 2.0",
+  "rubric_dimensions": {
+    "ER": {
+      "name": "Emotional Resonance",
+      "weight": 1.5,
+      "description": "情感共鸣"
+    },
+    "SR": {
+      "name": "Social Resonance",
+      "weight": 1.5,
+      "description": "社会共鸣"
+    },
+    "HP": {
+      "name": "Hook Potential",
+      "weight": 1.5,
+      "description": "钩子潜力"
+    },
+    "QL": {
+      "name": "Quotable Lines",
+      "weight": 1.0,
+      "description": "金句密度"
+    },
+    "NA": {
+      "name": "Narrativity",
+      "weight": 1.0,
+      "description": "叙事性"
+    },
+    "AB": {
+      "name": "Audience Breadth",
+      "weight": 1.0,
+      "description": "受众广度"
+    },
+    "SAT": {
+      "name": "Satire Depth",
+      "weight": 1.0,
+      "description": "讽刺深度"
+    }
+  },
+  "bucket_scheme": "ratio",
+  "bucket_boundaries": {
+    "viral": {
+      "min": 5.0,
+      "max": 999,
+      "label": "爆款"
+    },
+    "outperform": {
+      "min": 2.0,
+      "max": 5.0,
+      "label": "超均"
+    },
+    "average": {
+      "min": 0.8,
+      "max": 2.0,
+      "label": "均值"
+    },
+    "underperform": {
+      "min": 0.3,
+      "max": 0.8,
+      "label": "低于均值"
+    },
+    "flop": {
+      "min": 0,
+      "max": 0.3,
+      "label": "扑街"
+    }
+  },
+  "enabled_trend_sources": [
+    "manual-paste"
+  ],
+  "enabled_perf_adapters": [
+    "manual"
+  ],
+  "baseline_plays": 0,
+  "last_bump_at": null,
+  "last_retro_at": "2026-06-02T22:18:39.505908",
+  "last_published_at": "2026-06-02T22:18:37.453426",
+  "last_published_file": "3f7638d8c32d",
+  "pending_retros": [],
+  "shoots": [],
+  "consecutive_directional_errors": [
+    "correct"
+  ],
+  "in_progress_session": "9f0fff69ef7c",
+  "last_prediction_self_scored": false,
+  "last_self_scored_at": null,
+  "rubric_form_mismatch": false,
+  "benchmark_imported": false,
+  "benchmark_account": null,
+  "created_at": "2026-06-02T22:18:27.213279",
+  "updated_at": "2026-06-02T22:32:33.356875"
+}

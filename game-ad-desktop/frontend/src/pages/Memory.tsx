@@ -6,6 +6,7 @@ import {
   SearchOutlined, ReloadOutlined, FileTextOutlined, ArrowRightOutlined,
 } from '@ant-design/icons';
 import { useMemoryStore, initMemorySync, type CaseResult } from '../stores/memory';
+import PageHelp from '../components/PageHelp';
 
 const { Text, Paragraph } = Typography;
 
@@ -193,6 +194,8 @@ export default function Memory() {
           </Col>
         </Row>
       </Card>
+
+      <PageHelp page="memory" />
 
       {/* Results */}
       <Spin spinning={loading}>

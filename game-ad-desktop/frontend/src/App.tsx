@@ -17,6 +17,11 @@ import ManagerExecution from './pages/manager/ManagerExecution';
 import ManagerSafety from './pages/manager/ManagerSafety';
 import ManagerMemory from './pages/manager/ManagerMemory';
 import ManagerReports from './pages/manager/ManagerReports';
+import CheatDashboard from './pages/CheatDashboard';
+import CheatScore from './pages/CheatScore';
+import CheatPredict from './pages/CheatPredict';
+import CheatRetro from './pages/CheatRetro';
+import CheatRubric from './pages/CheatRubric';
 
 function NotFound() {
   return (
@@ -43,6 +48,11 @@ export default function App() {
           <Route path="/platform" element={<PlatformData />} />
           <Route path="/workshop" element={<Workshop />} />
           <Route path="/reports" element={<Reports />} />
+          <Route path="/cheat" element={<CheatDashboard />} />
+          <Route path="/cheat/score" element={<CheatScore />} />
+          <Route path="/cheat/predict" element={<CheatPredict />} />
+          <Route path="/cheat/retro" element={<CheatRetro />} />
+          <Route path="/cheat/rubric" element={<CheatRubric />} />
 
           <Route path="/manager" element={<ManagerDashboard />} />
           <Route path="/manager/data" element={<ManagerDataDiagnosis />} />
@@ -53,6 +63,11 @@ export default function App() {
           <Route path="/manager/reports" element={<ManagerReports />} />
           <Route path="/manager/platform" element={<PlatformData />} />
           <Route path="/manager/workshop" element={<Workshop />} />
+          <Route path="/manager/cheat" element={<CheatDashboard />} />
+          <Route path="/manager/cheat/score" element={<CheatScore />} />
+          <Route path="/manager/cheat/predict" element={<CheatPredict />} />
+          <Route path="/manager/cheat/retro" element={<CheatRetro />} />
+          <Route path="/manager/cheat/rubric" element={<CheatRubric />} />
 
           <Route path="*" element={<NotFound />} />
         </Route>

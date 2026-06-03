@@ -7,6 +7,7 @@ import { useManagerDataStore, DesignerStats, computeTeamOverview } from '../../s
 import type { MaterialRecord } from '../../stores/materialData';
 import DesignerDetailModal from '../../components/manager/DesignerDetailModal';
 import type { DetailSection } from '../../components/manager/DesignerDetailModal';
+import PageHelp from '../../components/PageHelp';
 
 const { Title, Text } = Typography;
 const { Panel } = Collapse;
@@ -621,6 +622,7 @@ export default function ManagerDataDiagnosis() {
       {/* ===== Header: import & clear ===== */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
         <Title level={4} style={{ color: text, margin: 0 }}>游戏广告买量团队体检报告</Title>
+        <PageHelp page="mgr-data" />
         <div style={{ flex: 1 }} />
         <input ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv" style={{ display: 'none' }}
           onChange={e => { const file = e.target.files?.[0]; if (file) handleImportExcel(file); e.target.value = ''; }} />

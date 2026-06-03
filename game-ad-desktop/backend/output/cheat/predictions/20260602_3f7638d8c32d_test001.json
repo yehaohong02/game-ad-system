@@ -1,0 +1,147 @@
+{
+  "id": "3f7638d8c32d",
+  "material_id": "test001",
+  "created_at": "2026-06-02T22:18:33.363497",
+  "status": "retro_done",
+  "header": {
+    "article_id": "test001",
+    "calibration_samples": 0,
+    "confidence": "red",
+    "scored_by": "user",
+    "blind_scored": true,
+    "rubric_version": 1
+  },
+  "input_snapshot": {
+    "script_text": "末日生存游戏广告，展示建造和战斗",
+    "script_hash": "94ca7b0a9e908bb1"
+  },
+  "prediction": {
+    "bucket": "outperform",
+    "probability_distribution": {
+      "viral": 10.0,
+      "outperform": 35.0,
+      "average": 40.0,
+      "underperform": 10.0,
+      "flop": 5.0
+    },
+    "center_estimate_w": 2.5,
+    "one_line_reason": "综合分 6.71，outperform"
+  },
+  "score_result": {
+    "scores": {
+      "ER": 3.5,
+      "SR": 4.0,
+      "HP": 4.5,
+      "QL": 3.0,
+      "NA": 2.5,
+      "AB": 3.0,
+      "SAT": 2.0
+    },
+    "composite": 6.71,
+    "bucket": "viral",
+    "bucket_label": "爆款",
+    "rubric_version": 1,
+    "formula": "(ER*1.5 + SR*1.5 + HP*1.5 + QL + NA + AB + SAT) / 8.5 * 2.0",
+    "dimensions": {
+      "ER": {
+        "name": "Emotional Resonance",
+        "desc": "情感共鸣：能否触发观众情绪",
+        "weight": 1.5,
+        "score": 3.5
+      },
+      "SR": {
+        "name": "Social Resonance",
+        "desc": "社会共鸣：能否引发社交讨论",
+        "weight": 1.5,
+        "score": 4.0
+      },
+      "HP": {
+        "name": "Hook Potential",
+        "desc": "钩子潜力：前3秒能否留住观众",
+        "weight": 1.5,
+        "score": 4.5
+      },
+      "QL": {
+        "name": "Quotable Lines",
+        "desc": "金句密度：可传播的句子数量",
+        "weight": 1.0,
+        "score": 3.0
+      },
+      "NA": {
+        "name": "Narrativity",
+        "desc": "叙事性：故事线是否完整",
+        "weight": 1.0,
+        "score": 2.5
+      },
+      "AB": {
+        "name": "Audience Breadth",
+        "desc": "受众广度：覆盖面有多广",
+        "weight": 1.0,
+        "score": 3.0
+      },
+      "SAT": {
+        "name": "Satire Depth",
+        "desc": "讽刺深度：洞察力和批判性",
+        "weight": 1.0,
+        "score": 2.0
+      }
+    }
+  },
+  "reasoning_factors": [
+    {
+      "factor": "钩子强",
+      "impact": "positive"
+    }
+  ],
+  "anchor_comparison": [],
+  "counterfactual_scenarios": [],
+  "critical_hypothesis": "战斗画面能留住观众",
+  "retro": {
+    "retro_at": "2026-06-02T22:18:39.505352",
+    "days_since_publish": 3,
+    "actual": {
+      "plays": 25000,
+      "plays_w": 2.5,
+      "likes": 1200,
+      "comments": 85,
+      "shares": 45,
+      "saves": 0,
+      "like_to_play": 0.048,
+      "comment_to_play": 0.0034,
+      "share_to_play": 0.0018
+    },
+    "comparison": {
+      "predicted_center_w": 2.5,
+      "actual_plays_w": 2.5,
+      "error_pct": 0.0,
+      "signed_error_pct": 0.0,
+      "direction": "correct",
+      "predicted_bucket": "outperform",
+      "actual_bucket": "viral"
+    },
+    "top_comments": [],
+    "new_observations": [
+      "战斗画面比建造画面留存高",
+      "前3秒钩子效果好"
+    ],
+    "verification": [
+      {
+        "element": "predicted_bucket",
+        "predicted": "outperform",
+        "actual": "average",
+        "verified": false
+      },
+      {
+        "element": "center_estimate",
+        "predicted": "2.5万",
+        "actual": "2.5万",
+        "verified": true
+      }
+    ]
+  },
+  "publish_info": {
+    "url": "https://douyin.com/test",
+    "platform": "douyin",
+    "published_at": "2026-06-02T22:18:37.452203"
+  }
+}

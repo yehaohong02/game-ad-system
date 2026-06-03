@@ -1,0 +1,95 @@
+{
+  "id": "9f0fff69ef7c",
+  "material_id": "565+",
+  "created_at": "2026-06-02T22:32:33.354772",
+  "status": "predicted",
+  "header": {
+    "article_id": "565+",
+    "calibration_samples": 1,
+    "confidence": "red",
+    "scored_by": "user",
+    "blind_scored": true,
+    "rubric_version": 1
+  },
+  "input_snapshot": {
+    "script_text": "监狱淘汰",
+    "script_hash": "08d186efe6dbd184"
+  },
+  "prediction": {
+    "bucket": "average",
+    "probability_distribution": {
+      "viral": 5,
+      "outperform": 20,
+      "average": 50,
+      "underperform": 20,
+      "flop": 5
+    },
+    "center_estimate_w": 1.0,
+    "one_line_reason": "综合分 10.0，average"
+  },
+  "score_result": {
+    "scores": {
+      "ER": 5.0,
+      "SR": 5.0,
+      "HP": 5.0,
+      "QL": 5.0,
+      "NA": 5.0,
+      "AB": 5.0,
+      "SAT": 5.0
+    },
+    "composite": 10.0,
+    "bucket": "viral",
+    "bucket_label": "爆款",
+    "rubric_version": 1,
+    "formula": "(ER*1.5 + SR*1.5 + HP*1.5 + QL + NA + AB + SAT) / 8.5 * 2.0",
+    "dimensions": {
+      "ER": {
+        "name": "Emotional Resonance",
+        "desc": "情感共鸣：能否触发观众情绪",
+        "weight": 1.5,
+        "score": 5.0
+      },
+      "SR": {
+        "name": "Social Resonance",
+        "desc": "社会共鸣：能否引发社交讨论",
+        "weight": 1.5,
+        "score": 5.0
+      },
+      "HP": {
+        "name": "Hook Potential",
+        "desc": "钩子潜力：前3秒能否留住观众",
+        "weight": 1.5,
+        "score": 5.0
+      },
+      "QL": {
+        "name": "Quotable Lines",
+        "desc": "金句密度：可传播的句子数量",
+        "weight": 1.0,
+        "score": 5.0
+      },
+      "NA": {
+        "name": "Narrativity",
+        "desc": "叙事性：故事线是否完整",
+        "weight": 1.0,
+        "score": 5.0
+      },
+      "AB": {
+        "name": "Audience Breadth",
+        "desc": "受众广度：覆盖面有多广",
+        "weight": 1.0,
+        "score": 5.0
+      },
+      "SAT": {
+        "name": "Satire Depth",
+        "desc": "讽刺深度：洞察力和批判性",
+        "weight": 1.0,
+        "score": 5.0
+      }
+    }
+  },
+  "reasoning_factors": [],
+  "anchor_comparison": [],
+  "counterfactual_scenarios": [],
+  "critical_hypothesis": "",
+  "retro": null
+}

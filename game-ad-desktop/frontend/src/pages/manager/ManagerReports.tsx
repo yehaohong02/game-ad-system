@@ -6,6 +6,7 @@ import DesignerCard from '../../components/manager/DesignerCard';
 import DesignerDetailModal from '../../components/manager/DesignerDetailModal';
 import type { CardSection } from '../../components/manager/DesignerCard';
 import type { DetailSection } from '../../components/manager/DesignerDetailModal';
+import PageHelp from '../../components/PageHelp';
 
 const { Title, Text } = Typography;
 
@@ -356,6 +357,7 @@ export default function ManagerReports() {
   return (
     <div style={{ padding: 16, background: panelBg, minHeight: '100vh' }}>
       <Title level={4} style={{ color: text, marginBottom: 12 }}>报告中心 · 管理者视角</Title>
+      <PageHelp page="mgr-reports" />
 
       {designers.length === 0 && (
         <div style={{ color: muted, textAlign: 'center', padding: 60, fontSize: 14 }}>

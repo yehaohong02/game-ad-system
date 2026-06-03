@@ -161,16 +161,19 @@ def main():
 
     # 8. 更新 ref
     print("Updating ref...")
-    ref, err = api_patch(f"repos/{REPO}/git/refs/heads/{BRANCH}", {"sha": commit["sha"], "force": True})
+    new_sha = commit["sha"]
+    ref, err = api_patch(f"repos/{REPO}/git/refs/heads/{BRANCH}", {"sha": new_sha, "force": True})
     if ref and "object" in ref:
         print(f"\nPUSH SUCCESS -> {ref['object']['sha'][:12]}")
         print(f"https://github.com/{REPO}")
 
-        # 同步本地
-        run(f"git update-ref refs/heads/{BRANCH} origin/main")
-        run("git reset --mixed origin/main")
+        # 同步本地到刚推送的新 commit（不要用 origin/main，它可能还是旧的）
+        run(f"git update-ref refs/heads/{BRANCH} {new_sha}")
+        run(f"git reset --mixed {new_sha}")
         run("git checkout -- . 2>nul")
         run("git clean -fd 2>nul")
+        # 更新 origin/main 引用
+        run(f"git update-ref refs/remotes/origin/main {new_sha}")
         print("Local synced.")
     else:
         print(f"Failed to update ref: {err}")

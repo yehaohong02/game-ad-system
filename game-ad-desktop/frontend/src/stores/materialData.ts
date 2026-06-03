@@ -4,6 +4,7 @@ import materialDataJson from '../data/materialData.json';
 export interface MaterialRecord {
   key: string;
   materialId: string;
+  videoId?: string;    // 关联 CreativeTags.video_id，用于特征合并
   category: string;
   spend: number;
   impressions: number;

@@ -10,6 +10,7 @@ import {
   BulbOutlined, RobotOutlined,
 } from '@ant-design/icons';
 import { useExecutionStore, initExecutionSync, type ExecutionMode, type Rule, type QueueTask, type LogEntry, type AgentStep, type CompetitiveInsight } from '../stores/execution';
+import PageHelp from '../components/PageHelp';
 
 const { Text } = Typography;
 
@@ -168,6 +169,7 @@ export default function Execution() {
               >
                 运行 Agent
               </Button>
+              <PageHelp page="execution" />
             </Space>
           </Col>
         </Row>

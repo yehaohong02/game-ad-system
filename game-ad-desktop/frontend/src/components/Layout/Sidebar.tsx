@@ -12,6 +12,11 @@ import {
   BarChartOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
+  AimOutlined,
+  EditOutlined,
+  EyeOutlined,
+  HistoryOutlined,
+  SettingOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 
@@ -51,6 +56,18 @@ const menuItems: MenuItem[] = [
     icon: <DatabaseOutlined />,
     label: '记忆沉淀',
   },
+  {
+    key: '/cheat',
+    icon: <AimOutlined />,
+    label: 'Cheat 校准',
+    children: [
+      { key: '/cheat', icon: <DashboardOutlined />, label: '仪表盘' },
+      { key: '/cheat/score', icon: <EditOutlined />, label: '素材评分' },
+      { key: '/cheat/predict', icon: <EyeOutlined />, label: '盲测预测' },
+      { key: '/cheat/retro', icon: <HistoryOutlined />, label: '复盘中心' },
+      { key: '/cheat/rubric', icon: <SettingOutlined />, label: '公式管理' },
+    ],
+  },
   { type: 'divider' },
   {
     key: '/platform',
@@ -82,7 +99,7 @@ export default function Sidebar({ collapsed, onCollapse }: SidebarProps) {
 
   const selectedKey = isManagerMode
     ? (location.pathname === '/manager' ? '/manager' : location.pathname)
-    : '/' + location.pathname.split('/')[1];
+    : location.pathname;
 
   const effectiveMenuItems = isManagerMode
     ? menuItems

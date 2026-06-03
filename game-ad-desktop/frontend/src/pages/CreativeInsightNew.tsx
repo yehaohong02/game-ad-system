@@ -14,6 +14,7 @@ import {
   TrendItem, CreativeAnalysis, OptimizationSuggestion, FormulaWithData,
 } from '../stores/creativeInsightNew';
 import { useMaterialDataStore } from '../stores/materialData';
+import PageHelp from '../components/PageHelp';
 
 const { Text } = Typography;
 
@@ -345,6 +346,7 @@ export default function CreativeInsightNew() {
         {highPriSuggestions.length > 0 && <Tag color="red" style={{ fontSize: 13 }}>{highPriSuggestions.length} 项高优建议</Tag>}
         {formulaRecSummary.totalRecs > 0 && <Tag color="green" style={{ fontSize: 13 }}>{formulaRecSummary.totalRecs} 条公式推荐</Tag>}
         <Tag color="blue" style={{ fontSize: 13 }}>{data.length} 条素材</Tag>
+        <PageHelp page="creative" />
       </div>
 
       {/* ===== 1. 创意趋势 ===== */}

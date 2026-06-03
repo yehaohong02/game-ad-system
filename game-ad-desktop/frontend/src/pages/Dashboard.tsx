@@ -10,6 +10,7 @@ import {
 import ReactECharts from 'echarts-for-react';
 import { useMaterialDataStore } from '../stores/materialData';
 import { useDashboardStore, initDashboardSync } from '../stores/dashboard';
+import PageHelp from '../components/PageHelp';
 
 const { Text } = Typography;
 
@@ -236,6 +237,7 @@ export default function Dashboard() {
         <div style={{ flex: 1 }} />
         <Tag color="blue" style={{ fontSize: 12, margin: 0 }}>{data.length} 条素材</Tag>
         <Tag color="purple" style={{ fontSize: 12, margin: 0 }}>{categoryData.length} 个品类</Tag>
+        <PageHelp page="dashboard" />
         <Tag color={m.zeroPlayCount > 20 ? 'red' : 'orange'} style={{ fontSize: 12, margin: 0 }}>{m.withPlayCount} 条有播放</Tag>
         {dashMetrics.installs > 0 && (
           <>
